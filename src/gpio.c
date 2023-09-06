@@ -13,8 +13,7 @@
                  drive strength setting. 
 
  *
- * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
  *
  
  */
@@ -40,17 +39,15 @@
 // to determine the correct values for these.
 // If these links have gone bad, consult the reference manual and/or the datasheet for the MCU.
 // Change to correct port and pins:
-#define LED_port   (0) 
-#define LED0_pin   (0)
-#define LED1_pin   (0)
+#define LED_port   (5)
+#define LED0_pin   (4)
+#define LED1_pin   (5)
 
 
 
 // Set GPIO drive strengths and modes of operation
 void gpioInit()
 {
-    // Student Edit:
-
     // Set the port's drive strength. In this MCU implementation, all GPIO cells
     // in a "Port" share the same drive strength setting. 
 	//GPIO_DriveStrengthSet(LED_port, gpioDriveStrengthStrongAlternateStrong); // Strong, 10mA
