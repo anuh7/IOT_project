@@ -38,7 +38,7 @@
  *
  ******************************************************************************/
 
-// Students: Remember, a header file (a .h file) defines an interface
+// Students: Remember, a header file (a .h file) defines an +interface
 //           for functions defined within an implementation file (a .c file).
 //           The .h file defines what a caller (a user) of a .c file requires.
 //           At a minimum, the .h file should define the publicly callable
@@ -47,6 +47,18 @@
 
 #ifndef APP_H
 #define APP_H
+
+
+//#define LOWEST_ENERGY_MODE    (0)
+//#define LOWEST_ENERGY_MODE    (1)
+//#define LOWEST_ENERGY_MODE    (2)
+#define LOWEST_ENERGY_MODE    (3)
+
+
+#define LETIMER_ON_TIME_MS     (175)
+#define LETIMER_OFF_TIME_MS   (2250-LETIMER_ON_TIME_MS)
+#define LETIMER_PERIOD_MS     (2250)
+
 
 /**************************************************************************//**
  * Application Init.
