@@ -55,9 +55,7 @@
 #define LOWEST_ENERGY_MODE    (3)
 
 
-#define LETIMER_ON_TIME_MS     (175)
-#define LETIMER_OFF_TIME_MS   (2250-LETIMER_ON_TIME_MS)
-#define LETIMER_PERIOD_MS     (2250)
+#define LETIMER_PERIOD_MS     (3000)
 
 
 /**************************************************************************//**

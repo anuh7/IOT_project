@@ -3,14 +3,14 @@
  * @brief     Application interface provided for oscillators.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 15, 2021
+ * @date      Sept 22, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 2- Managing Energy modes
- * @due        Sept 15
+ * @assignment Assignment 3- Si7021 and Load Power Management
+ * @due        Sept 22
  *
  * @resources  -
  */

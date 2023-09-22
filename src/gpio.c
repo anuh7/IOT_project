@@ -42,6 +42,8 @@
 #define LED_port   (5)
 #define LED0_pin   (4)
 #define LED1_pin   (5)
+#define sensor_port  (3)
+#define sensor_pin   (15)
 
 
 
@@ -57,6 +59,8 @@ void gpioInit()
 	GPIO_PinModeSet(LED_port, LED0_pin, gpioModePushPull, false);
 	GPIO_PinModeSet(LED_port, LED1_pin, gpioModePushPull, false);
 
+  GPIO_DriveStrengthSet(sensor_port, gpioDriveStrengthWeakAlternateWeak); // Weak, 1mA
+  GPIO_PinModeSet(sensor_port, sensor_pin, gpioModePushPull, false);
 
 } // gpioInit()
 
@@ -85,6 +89,16 @@ void gpioLed1SetOff()
 }
 
 
+void sensor_enable()
+{
+  GPIO_PinOutSet(sensor_port, sensor_pin);
+}
+
+
+void sensor_disable()
+{
+  GPIO_PinOutClear(sensor_port, sensor_pin);
+}
 
 
 

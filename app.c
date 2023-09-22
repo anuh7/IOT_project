@@ -61,6 +61,8 @@
 #include "src/irq.h"
 #include "src/oscillators.h"
 #include "src/timers.h"
+#include "src/scheduler.h"
+#include "src/i2c.h"
 
 
 // Students: Here is an example of how to correctly include logging functions in
@@ -74,8 +76,9 @@
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
-
-
+enum {
+  evtUF_LETIMER0 = 1,
+};
 
 // *************************************************
 // Power Manager
@@ -222,16 +225,16 @@ SL_WEAK void app_process_action(void)
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
 
-//  delayApprox(3500000);
-//
-//  gpioLed0SetOn();
-//  gpioLed1SetOn();
-//
-//  delayApprox(3500000);
-//
-//  gpioLed0SetOff();
-//  gpioLed1SetOff();
+  uint32_t evt;
+  evt = getNextEvent();
+  switch (evt) {
+    case evtUF_LETIMER0:
+      read_temp_from_si7021();
+      break;
 
+    default:
+      break;
+  } // switch
 } // app_process_action()
 
 

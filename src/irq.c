@@ -23,6 +23,7 @@
 
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
+#include "src/scheduler.h"
 
 
 void LETIMER0_IRQHandler (void)
@@ -35,16 +36,17 @@ void LETIMER0_IRQHandler (void)
   flags = LETIMER_IntGetEnabled(LETIMER0);
 
   LETIMER_IntClear(LETIMER0, flags);
+  schedulerSetEventUF();
 
   CORE_EXIT_CRITICAL();
 
-  if (flags & LETIMER_IF_UF)
-    {
-      gpioLed0SetOn();
-    }
-
-  if (flags & LETIMER_IF_COMP1)
-  {
-     gpioLed0SetOff();
-  }
+//  if (flags & LETIMER_IF_UF)
+//    {
+//      gpioLed0SetOn();
+//    }
+//
+//  if (flags & LETIMER_IF_COMP1)
+//  {
+//     gpioLed0SetOff();
+//  }
 }
