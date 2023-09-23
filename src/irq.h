@@ -3,14 +3,14 @@
  * @brief     Application interface provided for irq.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 15, 2021
+ * @date      Sept 22, 2021
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 2- Managing Energy modes
- * @due        Sept 15
+ * @assignment Assignment 3- Si7021 and Load Power Management
+ * @due        Sept 22
  *
  * @resources  -
  */
@@ -23,8 +23,8 @@
 /**
 * @brief Interrupt handler for the LETIMER0
 *
-* The Low Energy Timer COMP0 and UF flags are checked to see which one is
-* set and the corresponding actions is performed.
+* The Low Energy Timer UF flags are checked to see which one is
+* set and the corresponding event is set.
 *
 * @param void
 * @return void

@@ -13,14 +13,14 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 2. What is the average current when the Si7021 is Powered Off?  
    Answer: 2.34 uA
    <br>Screenshot:  
-   ![Avg_current_lpmOFF](screenshots/assignment_3_q3.jpg)
+   ![Avg_current_lpmOFF](screenshots/assignment_3_q2.jpg)
    
 3. What is the average current when the Si7021 is Powered On?  
-   Answer:
-   <br>Screenshot: 4.7 mA
+   Answer: 4.70 mA
+   <br>Screenshot: 
    ![Avg_current_lpmON](screenshots/assignment_3_q3.jpg)
    
 4. How long is the Si7021 Powered On for 1 temperature reading?  
-   Answer:
-   <br>Screenshot: 92.5 mA
+   Answer: 92.5 ms
+   <br>Screenshot: 
    ![Time_lpmON](screenshots/assignment_3_q4.jpg)
