@@ -70,55 +70,52 @@ void schedulerSetEventI2CTransfer()
 
 uint32_t getNextEvent()
 {
-    static uint32_t theEvent;                 // select 1 event to return to main() code
+  static uint32_t theEvent;                 // select 1 event to return to main() code
 
-    if (myEvents & evtUF_LETIMER0)
-      {
-        theEvent = evtUF_LETIMER0;
+  if (myEvents & evtUF_LETIMER0)
+    {
+      theEvent = evtUF_LETIMER0;
 
-        CORE_DECLARE_IRQ_STATE;            // enter critical section
-        CORE_ENTER_CRITICAL();
+      CORE_DECLARE_IRQ_STATE;            // enter critical section
+      CORE_ENTER_CRITICAL();
 
-        myEvents &= ~(evtUF_LETIMER0);        // clearing the event in the data structure
+      myEvents &= ~(evtUF_LETIMER0);        // clearing the event in the data structure
 
-        CORE_EXIT_CRITICAL();
-      }
-    if (myEvents & evtCOMP1_LETIMER0)
-      {
-        theEvent = evtCOMP1_LETIMER0;
+      CORE_EXIT_CRITICAL();
+    }
+  else if (myEvents & evtCOMP1_LETIMER0)
+    {
+      theEvent = evtCOMP1_LETIMER0;
 
-        CORE_DECLARE_IRQ_STATE;            // enter critical section
-        CORE_ENTER_CRITICAL();
+      CORE_DECLARE_IRQ_STATE;            // enter critical section
+      CORE_ENTER_CRITICAL();
 
-        myEvents &= ~(evtCOMP1_LETIMER0);
+      myEvents &= ~(evtCOMP1_LETIMER0);
 
-        CORE_EXIT_CRITICAL();
-      }
-    if (myEvents & evt_I2CTransferComplete)
-      {
-        theEvent = evt_I2CTransferComplete;
+      CORE_EXIT_CRITICAL();
+    }
+  else if (myEvents & evt_I2CTransferComplete)
+    {
+      theEvent = evt_I2CTransferComplete;
 
-        CORE_DECLARE_IRQ_STATE;            // enter critical section
-        CORE_ENTER_CRITICAL();
+      CORE_DECLARE_IRQ_STATE;            // enter critical section
+      CORE_ENTER_CRITICAL();
 
-        myEvents &= ~(evt_I2CTransferComplete);
+      myEvents &= ~(evt_I2CTransferComplete);
 
-        CORE_EXIT_CRITICAL();
-      }
-           // exit critical section
+      CORE_EXIT_CRITICAL();
+    }
+  // exit critical section
 
-    return (theEvent);
+  return (theEvent);
 }
 
 
 void state_machine(uint32_t event)
 {
-  my_states currentState;
   static my_states nextState = STATE0_IDLE;
 
-  currentState = nextState;
-
-  switch (currentState)
+  switch (nextState)
   {
     case STATE0_IDLE:
       nextState = STATE0_IDLE;      //default
@@ -128,7 +125,7 @@ void state_machine(uint32_t event)
           timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
           nextState = STATE1_TIMER_WAIT;
         }
-    break;
+      break;
 
     case STATE1_TIMER_WAIT:
       nextState = STATE1_TIMER_WAIT;      //default
@@ -139,7 +136,7 @@ void state_machine(uint32_t event)
           i2c_write();                               // I2C write command
           nextState = STATE2_WARMUP;
         }
-    break;
+      break;
 
     case STATE2_WARMUP:
       nextState = STATE2_WARMUP;      //default
@@ -149,7 +146,7 @@ void state_machine(uint32_t event)
           timerWaitUs_interrupt(CONVERTION_TIME);
           nextState = STATE3_MEASUREMENT;
         }
-    break;
+      break;
 
     case STATE3_MEASUREMENT:
       nextState = STATE3_MEASUREMENT;      //default
@@ -159,7 +156,7 @@ void state_machine(uint32_t event)
           i2c_read();
           nextState = STATE4_REPORT;
         }
-    break;
+      break;
 
     case STATE4_REPORT:
       nextState = STATE4_REPORT;      //default
@@ -172,7 +169,7 @@ void state_machine(uint32_t event)
           read_temp_from_si7021();
           nextState = STATE0_IDLE;
         }
-    break;
+      break;
   }
 
 }

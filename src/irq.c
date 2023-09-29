@@ -55,7 +55,7 @@ void LETIMER0_IRQHandler (void)
 
   if (flags & LETIMER_IF_COMP1)                 // checking the COMP1 underflow flag
   {
-      LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);        // disabling COMP1 interrupt
+      //LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);        // disabling COMP1 interrupt
       schedulerSetEventCOMP1();                               // setting COMP1 event
   }
 
