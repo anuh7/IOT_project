@@ -31,6 +31,8 @@
 
 #include "gpio.h"
 
+#define INCLUDE_LOG_DEBUG 1
+#include "src/log.h"
 
 // Student Edit: Define these, 0's are placeholder values.
 //
@@ -92,6 +94,7 @@ void gpioLed1SetOff()
 void sensor_enable()
 {
   GPIO_PinOutSet(sensor_port, sensor_pin);
+  //LOG_INFO("here");
 }
 
 

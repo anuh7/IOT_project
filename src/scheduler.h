@@ -3,14 +3,14 @@
  * @brief     Application interface provided for scheduler.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 22, 2023
+ * @date      Sept 29, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 3- Si7021 and Load Power Management
- * @due        Sept 22
+ * @assignment Assignment 4- Si7021 and Load Power Management
+ * @due        Sept 29
  *
  * @resources  -
  */
@@ -40,6 +40,33 @@ uint32_t getNextEvent();
 * @return void
 */
 void schedulerSetEventUF();
+
+/**
+* @brief Function to set the LE timer COMP1 interrupt in the event structure
+*
+*
+* @param void
+* @return void
+*/
+void schedulerSetEventCOMP1();
+
+/**
+* @brief Function to set the completion of i2c transaction in the event structure
+*
+*
+* @param void
+* @return void
+*/
+void schedulerSetEventI2CTransfer();
+
+/**
+* @brief State machine to control order of events
+*
+*
+* @param uint32_t event occurred is passed to decide on state transition
+* @return void
+*/
+void state_machine(uint32_t event);
 
 
 #endif /* SRC_SCHEDULER_H_ */

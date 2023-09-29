@@ -33,7 +33,7 @@
  *
  *
  * Student edit: Add your name and email address here:
- * @student    Awesome Student, Awesome.Student@Colorado.edu
+ * @student    Anuhya Kuraparthy, anuhya.kuraparthy@Colorado.edu
  *
  *
  ******************************************************************************/

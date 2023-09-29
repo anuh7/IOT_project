@@ -168,7 +168,6 @@ SL_WEAK void app_init(void)
   // Don't call any Bluetooth API functions until after the boot event.
 
   gpioInit();
-  gpioLed0SetOff();
 
   if(LOWEST_ENERGY_MODE == 1)
   {
@@ -227,14 +226,9 @@ SL_WEAK void app_process_action(void)
 
   uint32_t evt;
   evt = getNextEvent();
-  switch (evt) {
-    case evtUF_LETIMER0:
-      read_temp_from_si7021();
-      break;
 
-    default:
-      break;
-  } // switch
+  state_machine(evt);
+
 } // app_process_action()
 
 

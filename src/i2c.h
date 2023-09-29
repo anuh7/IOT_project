@@ -3,20 +3,22 @@
  * @brief     Application Interface for I2C driver
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 22, 2023
+ * @date      Sept 29, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 3- Si7021 and Load Power Management
- * @due        Sept 22
+ * @assignment Assignment 4- Si7021 and Load Power Management
+ * @due        Sept 29
  *
  * @resources  -
  */
 
 #ifndef SRC_I2C_H_
 #define SRC_I2C_H_
+
+void initI2C(void);
 
 /**
 * @brief Function to initiate i2c write sequence to device
@@ -40,21 +42,11 @@ void i2c_write();
 */
 void i2c_read();
 
-/**
-* @brief Function to calculate temperature from the 16-bit word returned by Si7021
-*
-*
-* @param void
-* @return float   Returns the temperature value in Celsius
-*/
-float measureTemp();
 
 /**
-* @brief Function initialises I2C peripheral, calls i2c_write and i2c_read functions
-*
-* The device is ON by making the device SENSOR_ENABLE pin HIGH, and I2C is initialised. i2c_write
-* and i2c_read are called with sufficient delay and the temperature value is logged on
+* @brief Function to calculate temperature from the 16-bit word returned by Si7021 the temperature value is logged on
 * the serial terminal
+*
 *
 * @param void
 * @return void
