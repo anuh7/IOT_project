@@ -53,11 +53,11 @@ void initLETIMER0()
 
   LETIMER_IntClear (LETIMER0, 0xFFFFFFFF);
 
-  LETIMER_IntEnable(LETIMER0, LETIMER_IEN_UF);      /* Enable the flags for underflow of LE timer */
+  // Set UF and COMP1 in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
+  uint32_t temp = LETIMER_IEN_COMP1 |LETIMER_IEN_UF;                  /* Attributions: Devang*/
 
-  LETIMER_TypeDef *letimer;
-  letimer     = LETIMER0;
-  letimer->IEN |= LETIMER_IEN_UF;
+  // Enable LETIMER Interrupt
+  LETIMER_IntEnable (LETIMER0, temp);
 
   LETIMER_Enable (LETIMER0, true);                  /* Start/Enable the timer */
 }
@@ -88,7 +88,7 @@ void timerWaitUs_interrupt(int32_t us_wait)
       }
 
       LETIMER_CompareSet(LETIMER0, 1, delay_tick);          /* Loading the delay period in COMP1 register*/
-      LETIMER_IntEnable(LETIMER0, LETIMER_IEN_COMP1);      /* Enable the flags for underflow of COMP1 timer */
+
 }
 
 void timerWaitUs_polled(uint32_t us_wait)

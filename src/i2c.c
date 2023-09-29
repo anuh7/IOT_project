@@ -22,7 +22,7 @@
 #include "src/gpio.h"
 #include "src/timers.h"
 
-#define INCLUDE_LOG_DEBUG 1
+#define INCLUDE_LOG_DEBUG 0
 #include "src/log.h"
 
 #include "i2c.h"
