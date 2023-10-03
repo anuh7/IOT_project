@@ -83,11 +83,7 @@ uint32_t getNextEvent()
 
       CORE_EXIT_CRITICAL();
     }
-<<<<<<< HEAD
   else if (myEvents & evtCOMP1_LETIMER0)        /* Attributions: Devang*/
-=======
-  else if (myEvents & evtCOMP1_LETIMER0)
->>>>>>> a1cfa9211215001686827614dd5589d5f1a281e8
     {
       theEvent = evtCOMP1_LETIMER0;
 
@@ -117,11 +113,7 @@ uint32_t getNextEvent()
 
 void state_machine(uint32_t event)
 {
-<<<<<<< HEAD
   static my_states nextState = STATE0_IDLE;               /* Attributions: Devang*/
-=======
-  static my_states nextState = STATE0_IDLE;
->>>>>>> a1cfa9211215001686827614dd5589d5f1a281e8
 
   switch (nextState)
   {

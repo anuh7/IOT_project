@@ -54,11 +54,7 @@ void initLETIMER0()
   LETIMER_IntClear (LETIMER0, 0xFFFFFFFF);
 
   // Set UF and COMP1 in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
-<<<<<<< HEAD
   uint32_t temp = LETIMER_IEN_COMP1 |LETIMER_IEN_UF;                  /* Attributions: Devang*/
-=======
-  uint32_t temp = LETIMER_IEN_COMP1 |LETIMER_IEN_UF;
->>>>>>> a1cfa9211215001686827614dd5589d5f1a281e8
 
   // Enable LETIMER Interrupt
   LETIMER_IntEnable (LETIMER0, temp);
