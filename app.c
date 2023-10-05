@@ -63,6 +63,7 @@
 #include "src/timers.h"
 #include "src/scheduler.h"
 #include "src/i2c.h"
+#include "src/ble.h"
 
 
 // Students: Here is an example of how to correctly include logging functions in
@@ -224,10 +225,10 @@ SL_WEAK void app_process_action(void)
   //         We will create/use a scheme that is far more energy efficient in
   //         later assignments.
 
-  uint32_t evt;
-  evt = getNextEvent();
-
-  state_machine(evt);
+//  uint32_t evt;
+//  evt = getNextEvent();
+//
+//  state_machine(evt);
 
 } // app_process_action()
 
@@ -249,16 +250,16 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
 {
 
   // Just a trick to hide a compiler warning about unused input parameter evt.
-  (void) evt;
+  //(void) evt;
 
   // For A5 onward:
   // Some events require responses from our application code,
   // and don’t necessarily advance our state machines.
   // For A5 uncomment the next 2 function calls
-  // handle_ble_event(evt); // put this code in ble.c/.h
+   handle_ble_event(evt); // put this code in ble.c/.h
 
   // sequence through states driven by events
-  // state_machine(evt);    // put this code in scheduler.c/.h
+   state_machine(evt);    // put this code in scheduler.c/.h
 
 
 } // sl_bt_on_event()

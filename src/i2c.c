@@ -95,12 +95,13 @@ void i2c_read()
 }
 
 
-void read_temp_from_si7021()
+float read_temp_from_si7021()
 {
     float temperature;
     temp_value = (read_data[0] << 8) + read_data[1];
     temperature = (((175.72*temp_value)/65536) - 46.85);
 
-    LOG_INFO("Temperature = %f C\n\r", temperature);
+    return temperature;
+//    LOG_INFO("Temperature = %f C\n\r", temperature);
 }
 

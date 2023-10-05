@@ -21,6 +21,10 @@
 
 #include <stdint.h>
 
+#include "sl_bluetooth.h"
+
+
+
 
 /**
 * @brief Scheduler routine to return 1 event to main()code and clear that event
@@ -29,7 +33,7 @@
 * @param void
 * @return uint32_t  Returns the event set in the scheduler
 */
-uint32_t getNextEvent();
+//uint32_t getNextEvent();
 
 
 /**
@@ -66,7 +70,7 @@ void schedulerSetEventI2CTransfer();
 * @param uint32_t event occurred is passed to decide on state transition
 * @return void
 */
-void state_machine(uint32_t event);
+void state_machine(sl_bt_msg_t *evt);
 
 
 #endif /* SRC_SCHEDULER_H_ */

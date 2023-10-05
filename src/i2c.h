@@ -51,6 +51,6 @@ void i2c_read();
 * @param void
 * @return void
 */
-void read_temp_from_si7021();
+float read_temp_from_si7021();
 
 #endif /* SRC_I2C_H_ */
