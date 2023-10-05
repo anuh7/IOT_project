@@ -77,9 +77,10 @@
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
-enum {
-  evtUF_LETIMER0 = 1,
-};
+// DOS
+//enum {
+//  evtUF_LETIMER0 = 1,
+//};
 
 // *************************************************
 // Power Manager
@@ -170,15 +171,16 @@ SL_WEAK void app_init(void)
 
   gpioInit();
 
-  if(LOWEST_ENERGY_MODE == 1)
-  {
+  // DOS - Use conditional compilation controls
+#if(LOWEST_ENERGY_MODE == 1)
+
       sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
-  }
-  else if(LOWEST_ENERGY_MODE == 2)
+
+#elif(LOWEST_ENERGY_MODE == 2)
   {
       sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM2);
   }
-
+#endif
 
   oscillator_init();
   initLETIMER0();

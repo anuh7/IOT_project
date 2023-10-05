@@ -54,7 +54,9 @@ void initLETIMER0()
   LETIMER_IntClear (LETIMER0, 0xFFFFFFFF);
 
   // Set UF and COMP1 in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
-  uint32_t temp = LETIMER_IEN_COMP1 |LETIMER_IEN_UF;                  /* Attributions: Devang*/
+  // DOS: I think you want to only the UF IEN, and set the COMP1 IEN bit in timerWaitUs_interrupt()
+//  uint32_t temp = LETIMER_IEN_COMP1 | LETIMER_IEN_UF;                  /* Attributions: Devang*/
+  uint32_t temp = LETIMER_IEN_UF; // DOS Just UF
 
   // Enable LETIMER Interrupt
   LETIMER_IntEnable (LETIMER0, temp);
@@ -88,6 +90,11 @@ void timerWaitUs_interrupt(int32_t us_wait)
       }
 
       LETIMER_CompareSet(LETIMER0, 1, delay_tick);          /* Loading the delay period in COMP1 register*/
+
+      // DOS: Set COMP1 IEN bit, cleared in your LETIMER0_IRQHandler() if COMP1 IF bit is set.
+      //      You have this commented out in irq.c: LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
+      LETIMER_IntEnable (LETIMER0, LETIMER_IEN_COMP1);
+      LETIMER0->IEN = LETIMER0->IEN | LETIMER_IEN_COMP1; // DOS fix for compiler bug
 
 }
 

@@ -127,19 +127,41 @@ void schedulerSetEventI2CTransfer()
 void state_machine(sl_bt_msg_t *evt)
 {
   static my_states nextState = STATE0_IDLE;               /* Attributions: Devang*/
+         my_states state; // DOS
+
   ble_data_struct_t *bleDataPtr = getBleDataPtr();
 
-  if((SL_BT_MSG_ID(evt->header) == sl_bt_evt_system_external_signal_id)){
-     // && bleDataPtr->connection_open == true){
-        LOG_INFO("HERE");
-  switch (nextState)
+  // DOS:
+  // On each call, transfer nextState to state, this is similar to how
+  // a hardware state machine transfers nextState to the state flip-flops
+  // on each rising edge of the clock signal
+  state = nextState;
+
+  // DOS:
+  //if((SL_BT_MSG_ID(evt->header) == sl_bt_evt_system_external_signal_id)){
+  // Return if:
+  //   a) not an sl_bt_evt_system_external_signal_id event, or
+  //   b) client has not enabled indications for this characteristic
+  //   c) not in an open connection
+  if( (SL_BT_MSG_ID(evt->header) != sl_bt_evt_system_external_signal_id) ||
+      //(HTM indications are not enabled) ||
+      (bleDataPtr->connection_open != true) ) {
+
+     return;
+
+  } // if
+
+  LOG_INFO("HERE, ext sig value=%d", evt->data.evt_system_external_signal.extsignals);
+
+//  switch (nextState) // DOS
+  switch (state)
   {
     case STATE0_IDLE:
-      LOG_INFO("HERE3");
+      //LOG_INFO("HERE2");
       nextState = STATE0_IDLE;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtUF_LETIMER0)
         {
-          LOG_INFO("HERE2");
+          LOG_INFO("To 1");
           sensor_enable();                          // power up the device
           timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
           nextState = STATE1_TIMER_WAIT;
@@ -150,6 +172,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE1_TIMER_WAIT;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
         {
+          LOG_INFO("To 2");
           initI2C();                                 // initialise I2C
           sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);    // Power requirement for I2C
           i2c_write();                               // I2C write command
@@ -161,6 +184,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE2_WARMUP;      //default
       if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
         {
+          LOG_INFO("To 3");
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
           timerWaitUs_interrupt(CONVERTION_TIME);
           nextState = STATE3_MEASUREMENT;
@@ -171,6 +195,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE3_MEASUREMENT;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
         {
+          LOG_INFO("To 4");
           sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
           i2c_read();
           nextState = STATE4_REPORT;
@@ -181,7 +206,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE4_REPORT;      //default
       if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
         {
-
+          LOG_INFO("To 0");
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
           sensor_disable();
           NVIC_DisableIRQ(I2C0_IRQn);
@@ -191,5 +216,5 @@ void state_machine(sl_bt_msg_t *evt)
       break;
   }
 
-  }
+//  } // DOS
 }

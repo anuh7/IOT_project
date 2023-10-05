@@ -91,6 +91,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 // Including starting BT stack soft timers!
 // --------------------------------------------------------
     case sl_bt_evt_system_boot_id:
+          LOG_INFO("Boot Evt\n"); // DOS
+
           sc = sl_bt_system_get_identity_address(&(bleDataPtr->myAddress), &(bleDataPtr->myAddressType));
 
           if (sc != SL_STATUS_OK) {
@@ -129,6 +131,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       break;
 
     case sl_bt_evt_connection_opened_id:
+      LOG_INFO("Open Evt\n"); // DOS
+
       // handle open event
       bleDataPtr->connection_open = true;
       bleDataPtr->connection_handle = evt->data.evt_connection_opened.connection;
@@ -163,6 +167,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       break;
 
      case sl_bt_evt_connection_closed_id:
+       LOG_INFO("Close Evt\n"); // DOS
+
        // handle close event
        bleDataPtr->connection_open = false;
 

@@ -53,9 +53,11 @@ void LETIMER0_IRQHandler (void)
       count++;
     }
 
-  if (flags & LETIMER_IF_COMP1)                 // checking the COMP1 underflow flag
+  if (flags & LETIMER_IF_COMP1)                 // checking the COMP1 flag bit - DOS
   {
-      //LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);        // disabling COMP1 interrupt
+      // DOS: Probably a bug, you want to disable this IRQ until the next call to timerWaitUs_interrupt()
+      //      otherwise it will keep going off.
+      LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);        // disabling COMP1 interrupt
       schedulerSetEventCOMP1();                               // setting COMP1 event
   }
 
