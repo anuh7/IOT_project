@@ -65,7 +65,7 @@ void initLETIMER0()
 }
 
 
-void timerWaitUs_interrupt(int32_t us_wait)
+void timerWaitUs_interrupt(uint32_t us_wait)
 {
   uint32_t current_tick, delay_tick;
   uint32_t ticks_required = ((us_wait*ACTUAL_CLK_FREQ)/(1000*1000));          /* Number of ticks required*/
@@ -81,12 +81,17 @@ void timerWaitUs_interrupt(int32_t us_wait)
       LOG_ERROR("Delay requested is shorter than 1ms; Clamping delay to LE timer resolution \n\r");
     }
 
+  //current=1000-4000
+  //(0x5000)-(0x4000-0x1000)=0x2000.
 
       current_tick = LETIMER_CounterGet(LETIMER0);
-      delay_tick = current_tick - ticks_required;           /* LE timer is a countdown timer*/
 
-      if(delay_tick > VALUE_TO_LOAD_COMP0){                    // overflow condition
-        delay_tick = (VALUE_TO_LOAD_COMP0 - (0xFFFF - delay_tick));
+      if (current_tick >= ticks_required){
+      delay_tick = current_tick - ticks_required;           /* LE timer is a countdown timer*/
+      }
+
+      else{                    // overflow condition
+        delay_tick = (VALUE_TO_LOAD_COMP0 - (ticks_required - current_tick));
       }
 
       LETIMER_CompareSet(LETIMER0, 1, delay_tick);          /* Loading the delay period in COMP1 register*/
@@ -95,6 +100,7 @@ void timerWaitUs_interrupt(int32_t us_wait)
       //      You have this commented out in irq.c: LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
       LETIMER_IntEnable (LETIMER0, LETIMER_IEN_COMP1);
       LETIMER0->IEN = LETIMER0->IEN | LETIMER_IEN_COMP1; // DOS fix for compiler bug
+
 
 }
 
