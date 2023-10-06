@@ -67,12 +67,12 @@ void initLETIMER0()
 
   // DOS: Read it a few times to make sure it's running, step over these in the debugger,
   //      make sure you are getting the values you expect
-  temp = LETIMER_CounterGet (LETIMER0);
-  temp = LETIMER_CounterGet (LETIMER0);
-  temp = LETIMER_CounterGet (LETIMER0);
-  temp = LETIMER_CounterGet (LETIMER0);
-  temp = LETIMER_CounterGet (LETIMER0);
-  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
+//  temp = LETIMER_CounterGet (LETIMER0);
 
 }
 

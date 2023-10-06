@@ -41,7 +41,8 @@ void send_temperature()
 
   if (bleDataPtr->connection_open == true){
 
-      temperature_in_c = (int32_t)read_temp_from_si7021();
+      temperature_in_c = (uint32_t)read_temp_from_si7021();
+      LOG_INFO("temp= %d", temperature_in_c);
 
       UINT8_TO_BITSTREAM(p, flags);
 
@@ -197,9 +198,13 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_gatt_server_characteristic_status_id:
 
+       //LOG_INFO("H2");
+       LOG_INFO("");
+
        if (evt->data.evt_gatt_server_characteristic_status.connection == gattdb_temperature_measurement)
          {
            // Characteristic client configuration has been changed.
+           LOG_INFO("H");
 
            if (evt->data.evt_gatt_server_characteristic_status.status_flags == sl_bt_gatt_server_client_config)
              {
