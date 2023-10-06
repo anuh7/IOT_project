@@ -39,6 +39,9 @@ void initLETIMER0();
 */
 void timerWaitUs_interrupt(uint32_t us_wait);
 
+// DOS: Instructor's version
+void timerWaitUs_irq (uint32_t delayInMicroSeconds);
+
 /**
 * @brief Function to create delay
 *

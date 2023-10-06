@@ -29,6 +29,12 @@
 
 
 
+// DOS: Test for GPIO used for ADC0 input, testing to see if I can config it for push-pull output
+// PD10 traces to Expansion header 7
+#define PD_port     gpioPortD
+#define PD_port10   10
+
+
 
 // Function prototypes
 void gpioInit();
@@ -41,6 +47,8 @@ void sensor_disable();
 
 
 
-
+// DOS: test code
+void gpioPD10On(void);
+void gpioPD10Off(void);
 
 #endif /* SRC_GPIO_H_ */

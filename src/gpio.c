@@ -64,6 +64,14 @@ void gpioInit()
   GPIO_DriveStrengthSet(sensor_port, gpioDriveStrengthWeakAlternateWeak); // Weak, 1mA
   GPIO_PinModeSet(sensor_port, sensor_pin, gpioModePushPull, false);
 
+
+  // DOS: Test for GPIO used for ADC0 input, testing to see if I can config it for push-pull output
+  // PD10 traces to Expansion header 7. Plan is to hook up the logic analyzer to this pin
+  // to test timerWaitUs_interrupt()
+  GPIO_DriveStrengthSet(PD_port, gpioDriveStrengthWeakAlternateWeak);
+  GPIO_PinModeSet(PD_port, PD_port10, gpioModePushPull, false);
+  gpioPD10Off();
+
 } // gpioInit()
 
 
@@ -103,6 +111,21 @@ void sensor_disable()
   GPIO_PinOutClear(sensor_port, sensor_pin);
 }
 
+
+
+
+
+// DOS: test code
+void gpioPD10On()
+{
+  GPIO_PinOutSet(PD_port,PD_port10); // routes to Expansion Header pin 7
+}
+
+
+void gpioPD10Off()
+{
+  GPIO_PinOutClear(PD_port,PD_port10); // routes to Expansion Header pin 7
+}
 
 
 

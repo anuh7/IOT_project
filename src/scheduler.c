@@ -163,7 +163,11 @@ void state_machine(sl_bt_msg_t *evt)
         {
           LOG_INFO("To 1");
           sensor_enable();                          // power up the device
-          timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
+          gpioLed0SetOn();
+          gpioLed1SetOn();
+          gpioPD10On();
+//          timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
+          timerWaitUs_irq(POWERUP_TIME);      // interrupt for powerup time
           nextState = STATE1_TIMER_WAIT;
         }
       break;
@@ -185,7 +189,11 @@ void state_machine(sl_bt_msg_t *evt)
         {
           LOG_INFO("To 3");
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
-          timerWaitUs_interrupt(CONVERTION_TIME);
+          gpioLed0SetOn();
+          gpioLed1SetOn();
+          gpioPD10On();
+//          timerWaitUs_interrupt(CONVERTION_TIME);
+          timerWaitUs_irq(CONVERTION_TIME);      // interrupt for powerup time
           nextState = STATE3_MEASUREMENT;
         }
       break;
@@ -219,6 +227,133 @@ void state_machine(sl_bt_msg_t *evt)
 }
 
 
+
+
+
+
+
+// alternate state machine that uses timerWaitUs_polled()
+
+void alt_state_machine(sl_bt_msg_t *evt)
+{
+  static my_states nextState = STATE0_IDLE;               /* Attributions: Devang*/
+         my_states state; // DOS
+
+  ble_data_struct_t *bleDataPtr = getBleDataPtr();
+
+  // DOS:
+  // On each call, transfer nextState to state, this is similar to how
+  // a hardware state machine transfers nextState to the state flip-flops
+  // on each rising edge of the clock signal
+  state = nextState;
+
+  // DOS:
+  //if((SL_BT_MSG_ID(evt->header) == sl_bt_evt_system_external_signal_id)){
+  // Return if:
+  //   a) not an sl_bt_evt_system_external_signal_id event, or
+  //   b) client has not enabled indications for this characteristic
+  //   c) not in an open connection
+  if( (SL_BT_MSG_ID(evt->header) != sl_bt_evt_system_external_signal_id) ||
+      //(HTM indications are not enabled) ||
+      (bleDataPtr->connection_open != true) ) {
+
+     return;
+
+  } // if
+
+  LOG_INFO("HERE, ext sig value=%d", evt->data.evt_system_external_signal.extsignals);
+
+//  switch (nextState) // DOS
+  switch (state)
+  {
+    case STATE0_IDLE:
+      //LOG_INFO("HERE2");
+      nextState = STATE0_IDLE;      //default
+      if (evt->data.evt_system_external_signal.extsignals == evtUF_LETIMER0)
+        {
+          LOG_INFO("To 2");
+          sensor_enable();                          // power up the device
+          gpioLed0SetOn();
+          gpioLed1SetOn();
+          gpioPD10On();
+          timerWaitUs_polled(POWERUP_TIME);
+          gpioPD10Off();
+//          timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
+          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);    // Power requirement for I2C
+          i2c_write();
+//          nextState = STATE1_TIMER_WAIT;
+          nextState = STATE2_WARMUP;
+        }
+      break;
+
+//    case STATE1_TIMER_WAIT:
+//      nextState = STATE1_TIMER_WAIT;      //default
+//      if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+//        {
+//          LOG_INFO("To 2");                               // initialise I2C
+//          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);    // Power requirement for I2C
+//          i2c_write();                               // I2C write command
+//          nextState = STATE2_WARMUP;
+//        }
+//      break;
+
+    case STATE2_WARMUP:
+      nextState = STATE2_WARMUP;      //default
+      if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
+        {
+          LOG_INFO("To 4");
+          sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
+          gpioLed0SetOn();
+          gpioLed1SetOn();
+          gpioPD10On();
+          timerWaitUs_polled(CONVERTION_TIME);
+          gpioPD10Off();
+//          timerWaitUs_interrupt(CONVERTION_TIME);
+          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
+          i2c_read();
+//          nextState = STATE3_MEASUREMENT;
+          nextState = STATE4_REPORT;
+        }
+      break;
+
+//    case STATE3_MEASUREMENT:
+//      nextState = STATE3_MEASUREMENT;      //default
+//      if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+//        {
+//          LOG_INFO("To 4");
+//          sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
+//          i2c_read();
+//          nextState = STATE4_REPORT;
+//        }
+//      break;
+
+    case STATE4_REPORT:
+      nextState = STATE4_REPORT;      //default
+      if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
+        {
+          LOG_INFO("To 0");
+          sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
+          sensor_disable();
+          NVIC_DisableIRQ(I2C0_IRQn);
+          send_temperature();
+          nextState = STATE0_IDLE;
+        }
+      break;
+  }
+
+//  } // DOS
+}
+
+
+
+
+
+
+
+
+
+
+
 void dave_machine(sl_bt_msg_t *evt)
 {
  static my_states nextState = STATE0_IDLE;        /* Attributions: Devang*/
@@ -238,11 +373,12 @@ void dave_machine(sl_bt_msg_t *evt)
      LOG_INFO("To 1");
      gpioLed0SetOn();
      gpioLed1SetOn();
-//     sensor_enable();             // power up the device
-     timerWaitUs_interrupt(10800);   // interrupt for powerup time
+     gpioPD10On();
+     timerWaitUs_interrupt(80000);   // gen next COMP1 event
      nextState = STATE1_TIMER_WAIT;
     }
    break;
+
   case STATE1_TIMER_WAIT:
    nextState = STATE1_TIMER_WAIT;   //default
    if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
@@ -250,17 +386,13 @@ void dave_machine(sl_bt_msg_t *evt)
      LOG_INFO("To 0");
      gpioLed0SetOff();
      gpioLed1SetOff();
-//     initI2C();                 // initialise I2C
-//     sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);  // Power requirement for I2C
-//     i2c_write();                // I2C write command
-//     nextState = STATE2_WARMUP;
-     timerWaitUs_interrupt(10800);
+     gpioPD10Off();
+
+     timerWaitUs_interrupt(80000); // gen next COMP1 event
      nextState = STATE0_IDLE;
     }
    break;
-//  case STATE2_WARMUP:
-//   nextState = STATE2_WARMUP;   //default
-//   if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
+
 
  } // switch
 } // dave_machine
