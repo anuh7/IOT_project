@@ -172,8 +172,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE1_TIMER_WAIT;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
         {
-          LOG_INFO("To 2");
-          initI2C();                                 // initialise I2C
+          LOG_INFO("To 2");                               // initialise I2C
           sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);    // Power requirement for I2C
           i2c_write();                               // I2C write command
           nextState = STATE2_WARMUP;
@@ -218,3 +217,50 @@ void state_machine(sl_bt_msg_t *evt)
 
 //  } // DOS
 }
+
+
+void dave_machine(sl_bt_msg_t *evt)
+{
+ static my_states nextState = STATE0_IDLE;        /* Attributions: Devang*/
+     my_states state; // DOS
+ ble_data_struct_t *bleDataPtr = getBleDataPtr();
+ // DOS:
+
+ state = nextState;
+
+ switch (state)
+ {
+  case STATE0_IDLE:
+   //LOG_INFO("HERE2");
+   nextState = STATE0_IDLE;   //default
+   if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+    {
+     LOG_INFO("To 1");
+     gpioLed0SetOn();
+     gpioLed1SetOn();
+//     sensor_enable();             // power up the device
+     timerWaitUs_interrupt(10800);   // interrupt for powerup time
+     nextState = STATE1_TIMER_WAIT;
+    }
+   break;
+  case STATE1_TIMER_WAIT:
+   nextState = STATE1_TIMER_WAIT;   //default
+   if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+    {
+     LOG_INFO("To 0");
+     gpioLed0SetOff();
+     gpioLed1SetOff();
+//     initI2C();                 // initialise I2C
+//     sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);  // Power requirement for I2C
+//     i2c_write();                // I2C write command
+//     nextState = STATE2_WARMUP;
+     timerWaitUs_interrupt(10800);
+     nextState = STATE0_IDLE;
+    }
+   break;
+//  case STATE2_WARMUP:
+//   nextState = STATE2_WARMUP;   //default
+//   if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
+
+ } // switch
+} // dave_machine

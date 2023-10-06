@@ -26,7 +26,8 @@
 #define INCLUDE_LOG_DEBUG 0
 #include "src/log.h"
 
-#define ACTUAL_CLK_FREQ CMU_ClockFreqGet(cmuClock_LETIMER0)                    // frequency of the selected oscillator
+#define ACTUAL_CLK_FREQ       (32768/4)
+//#define ACTUAL_CLK_FREQ CMU_ClockFreqGet(cmuClock_LETIMER0)                    // frequency of the selected oscillator
 #define VALUE_TO_LOAD_COMP0 ((LETIMER_PERIOD_MS*ACTUAL_CLK_FREQ)/1000)        // 3000 ms
 #define MIN_VALUE (1)
 
@@ -68,7 +69,11 @@ void initLETIMER0()
 void timerWaitUs_interrupt(uint32_t us_wait)
 {
   uint32_t current_tick, delay_tick;
-  uint32_t ticks_required = ((us_wait*ACTUAL_CLK_FREQ)/(1000*1000));          /* Number of ticks required*/
+  uint32_t ticks_required = (us_wait/1000);
+  ticks_required = ((ticks_required*ACTUAL_CLK_FREQ)/(1000));          /* Number of ticks required*/
+
+  //10800/1000=10.8
+  //10.8*8192
 
   if (ticks_required > (uint32_t)VALUE_TO_LOAD_COMP0)         /* Clamping the delay to LE timer period*/
     {

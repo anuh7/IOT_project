@@ -191,6 +191,8 @@ SL_WEAK void app_init(void)
   NVIC_ClearPendingIRQ(LETIMER0_IRQn);
   NVIC_EnableIRQ(LETIMER0_IRQn);
 
+  //timerWaitUs_interrupt(1000000);
+
 } // app_init()
 
 
@@ -232,7 +234,7 @@ SL_WEAK void app_process_action(void)
 //
 //  state_machine(evt);
  // timerWaitUs_interrupt(80000);
- // timerWaitUs_interrupt(80000);
+ // timerWaitUs_interrupt(1000000);
 
 } // app_process_action()
 
@@ -264,7 +266,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
 
   // sequence through states driven by events
    state_machine(evt);    // put this code in scheduler.c/.h
-  // dave_machine(evt);
+ //  dave_machine(evt);
 
 
 } // sl_bt_on_event()
