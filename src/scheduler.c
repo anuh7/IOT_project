@@ -39,11 +39,6 @@ enum {
   evt_I2CTransferComplete = 0x04    // event for I2C transaction
 };
 
-//enum {
-//  evtUF_LETIMER0,           // event for underflow interrupt
-//  evtCOMP1_LETIMER0,        // event for COMP1 interrupt
-//  evt_I2CTransferComplete,  // event for I2C transaction
-//};
 
 #define   MY_NUM_STATES (5)
 typedef enum uint32_t {
@@ -153,11 +148,9 @@ void state_machine(sl_bt_msg_t *evt)
 
   LOG_INFO("HERE, ext sig value=%d", evt->data.evt_system_external_signal.extsignals);
 
-//  switch (nextState) // DOS
   switch (state)
   {
     case STATE0_IDLE:
-      //LOG_INFO("HERE2");
       nextState = STATE0_IDLE;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtUF_LETIMER0)
         {
@@ -173,7 +166,7 @@ void state_machine(sl_bt_msg_t *evt)
       if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
         {
           LOG_INFO("To 2");
-          initI2C();                                 // initialise I2C
+//          initI2C();                                 // initialise I2C
           sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);    // Power requirement for I2C
           i2c_write();                               // I2C write command
           nextState = STATE2_WARMUP;
@@ -218,3 +211,36 @@ void state_machine(sl_bt_msg_t *evt)
 
 //  } // DOS
 }
+
+void dave_machine(sl_bt_msg_t *evt)
+{
+ static my_states nextState = STATE0_IDLE;        /* Attributions: Devang*/
+     my_states state; // DOS
+
+ state = nextState;
+ switch (state)
+ {
+  case STATE0_IDLE:
+   //LOG_INFO("HERE2");
+   nextState = STATE0_IDLE;   //default
+   if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+    {
+     LOG_INFO("To 1");
+     gpioLed0SetOn();
+//     sensor_enable();             // power up the device
+     timerWaitUs_interrupt(1000000);   // interrupt for powerup time
+     nextState = STATE1_TIMER_WAIT;
+    }
+   break;
+  case STATE1_TIMER_WAIT:
+   nextState = STATE1_TIMER_WAIT;   //default
+   if (evt->data.evt_system_external_signal.extsignals == evtCOMP1_LETIMER0)
+    {
+     LOG_INFO("To 0");
+     gpioLed0SetOff();
+     timerWaitUs_interrupt(1000000);
+     nextState = STATE0_IDLE;
+    }
+   break;
+ } // switch
+} // dave_machine

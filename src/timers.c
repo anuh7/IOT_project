@@ -27,6 +27,7 @@
 #include "src/log.h"
 
 #define ACTUAL_CLK_FREQ CMU_ClockFreqGet(cmuClock_LETIMER0)                    // frequency of the selected oscillator
+//#define ACTUAL_CLK_FREQ (32768/4)
 #define VALUE_TO_LOAD_COMP0 ((LETIMER_PERIOD_MS*ACTUAL_CLK_FREQ)/1000)        // 3000 ms
 #define MIN_VALUE (1)
 
@@ -55,17 +56,18 @@ void initLETIMER0()
 
   // Set UF and COMP1 in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
   // DOS: I think you want to only the UF IEN, and set the COMP1 IEN bit in timerWaitUs_interrupt()
-//  uint32_t temp = LETIMER_IEN_COMP1 | LETIMER_IEN_UF;                  /* Attributions: Devang*/
+  //uint32_t temp = LETIMER_IEN_COMP1 | LETIMER_IEN_UF;                  /* Attributions: Devang*/
   uint32_t temp = LETIMER_IEN_UF; // DOS Just UF
 
   // Enable LETIMER Interrupt
   LETIMER_IntEnable (LETIMER0, temp);
 
+
   LETIMER_Enable (LETIMER0, true);                  /* Start/Enable the timer */
 }
 
 
-void timerWaitUs_interrupt(int32_t us_wait)
+void timerWaitUs_interrupt(uint32_t us_wait)
 {
   uint32_t current_tick, delay_tick;
   uint32_t ticks_required = ((us_wait*ACTUAL_CLK_FREQ)/(1000*1000));          /* Number of ticks required*/
@@ -81,12 +83,17 @@ void timerWaitUs_interrupt(int32_t us_wait)
       LOG_ERROR("Delay requested is shorter than 1ms; Clamping delay to LE timer resolution \n\r");
     }
 
+  //current=1000-4000
+  //(0x5000)-(0x4000-0x1000)=0x2000.
 
       current_tick = LETIMER_CounterGet(LETIMER0);
-      delay_tick = current_tick - ticks_required;           /* LE timer is a countdown timer*/
 
-      if(delay_tick > VALUE_TO_LOAD_COMP0){                    // overflow condition
-        delay_tick = (VALUE_TO_LOAD_COMP0 - (0xFFFF - delay_tick));
+      if (current_tick >= ticks_required){
+      delay_tick = current_tick - ticks_required;           /* LE timer is a countdown timer*/
+      }
+
+      else{                    // overflow condition
+        delay_tick = (VALUE_TO_LOAD_COMP0 - (ticks_required - current_tick));
       }
 
       LETIMER_CompareSet(LETIMER0, 1, delay_tick);          /* Loading the delay period in COMP1 register*/

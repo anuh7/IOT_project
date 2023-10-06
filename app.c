@@ -231,6 +231,8 @@ SL_WEAK void app_process_action(void)
 //  evt = getNextEvent();
 //
 //  state_machine(evt);
+ // timerWaitUs_interrupt(80000);
+ // timerWaitUs_interrupt(80000);
 
 } // app_process_action()
 
@@ -262,6 +264,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
 
   // sequence through states driven by events
    state_machine(evt);    // put this code in scheduler.c/.h
+  // dave_machine(evt);
 
 
 } // sl_bt_on_event()

@@ -37,7 +37,7 @@ void initLETIMER0();
 * @param us_wait  delay required in microseconds
 * @return void
 */
-void timerWaitUs_interrupt(int32_t us_wait);
+void timerWaitUs_interrupt(uint32_t us_wait);
 
 /**
 * @brief Function to create delay

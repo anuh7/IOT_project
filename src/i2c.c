@@ -22,7 +22,7 @@
 #include "src/gpio.h"
 #include "src/timers.h"
 
-#define INCLUDE_LOG_DEBUG 0
+#define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
 #include "i2c.h"
@@ -63,6 +63,8 @@ void i2c_write()
 
   I2C_TransferReturn_TypeDef transferStatus;
 
+  initI2C();
+
   cmd_data = 0xF3;                  /* Measure Temperature, No Hold Master Mode */
 
   transferSequence.addr = SI7021_DEVICE_ADDR << 1;      // shift device address left
@@ -70,22 +72,30 @@ void i2c_write()
   transferSequence.buf[0].data = &cmd_data;             // pointer to data
   transferSequence.buf[0].len = sizeof(cmd_data);
 
+  NVIC_EnableIRQ(I2C0_IRQn);
+
   transferStatus = I2C_TransferInit (I2C0, &transferSequence);    // Prepare and start an I2C transfer (single master mode only)
+
+           // Enabling the interrupt in NVIC
 
   if (transferStatus < 0)
       LOG_ERROR("I2C_TransferInit() Write error = %d", transferStatus);
 
-  NVIC_EnableIRQ(I2C0_IRQn);              // Enabling the interrupt in NVIC
+
 }
 
 void i2c_read()
 {
   I2C_TransferReturn_TypeDef transferStatus;
 
+  initI2C();
+
   transferSequence.addr = SI7021_DEVICE_ADDR << 1;          // shift device address left
   transferSequence.flags = I2C_FLAG_READ;                   // Indicate plain read sequence: S+ADDR(R)+DATA0+P.
   transferSequence.buf[0].data = &read_data[0];             // pointer to data to write into
   transferSequence.buf[0].len = sizeof(read_data);
+
+  NVIC_EnableIRQ(I2C0_IRQn);
 
   transferStatus = I2C_TransferInit (I2C0, &transferSequence);    // Prepare and start an I2C transfer (single master mode only).
 
