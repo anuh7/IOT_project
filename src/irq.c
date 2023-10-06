@@ -67,14 +67,11 @@ void I2C0_IRQHandler(void)
 {
   I2C_TransferReturn_TypeDef transferStatus;
   transferStatus = I2C_Transfer(I2C0);             // continue an initiated I2C transfer in interrupt mode
-  if (transferStatus == i2cTransferDone){          // I2C transfer completed successfully
+  if (transferStatus == i2cTransferDone)          // I2C transfer completed successfully
     schedulerSetEventI2CTransfer();                // setting I2C transaction event
-    LOG_INFO("I2C");
-  }
 
-  if (transferStatus < 0){
+  if (transferStatus < 0)
       LOG_ERROR("%d", transferStatus);              // error logging
-  }
 }
 
 uint32_t letimerMilliseconds(void)

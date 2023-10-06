@@ -71,7 +71,6 @@ void schedulerSetEventI2CTransfer();
 * @return void
 */
 void state_machine(sl_bt_msg_t *evt);
-void dave_machine(sl_bt_msg_t *evt);
 
 
 #endif /* SRC_SCHEDULER_H_ */
