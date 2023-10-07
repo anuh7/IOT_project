@@ -35,7 +35,6 @@
 const LETIMER_Init_TypeDef LETIMER_INIT_VALUES =
   {
     false,              /* Do not Enable timer when initialization completes. */
-//    false,             /* Stop counter during debug halt. */
     true,             /* Do not stop counter during debug halt. */
     true,             /* Do load COMP0 into CNT on underflow. */
     false,             /* Do not load COMP1 into COMP0 when REP0 reaches 0. */
@@ -55,105 +54,67 @@ void initLETIMER0()
 
   LETIMER_IntClear (LETIMER0, 0xFFFFFFFF);
 
-  // Set UF and COMP1 in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
-  // DOS: I think you want to only the UF IEN, and set the COMP1 IEN bit in timerWaitUs_interrupt()
-//  uint32_t temp = LETIMER_IEN_COMP1 | LETIMER_IEN_UF;                  /* Attributions: Devang*/
-  uint32_t temp = LETIMER_IEN_UF; // DOS Just UF
+  // Set UF in LETIMER0_IEN, so that the timer will generate IRQs to the NVIC.
+  uint32_t temp = LETIMER_IEN_UF;                     /* Attribution: Instructor Dave Sluiter*/
 
   // Enable LETIMER Interrupt
   LETIMER_IntEnable (LETIMER0, temp);
 
   LETIMER_Enable (LETIMER0, true);                  /* Start/Enable the timer */
 
-  // DOS: Read it a few times to make sure it's running, step over these in the debugger,
-  //      make sure you are getting the values you expect
-//  temp = LETIMER_CounterGet (LETIMER0);
-//  temp = LETIMER_CounterGet (LETIMER0);
-//  temp = LETIMER_CounterGet (LETIMER0);
-//  temp = LETIMER_CounterGet (LETIMER0);
-//  temp = LETIMER_CounterGet (LETIMER0);
-//  temp = LETIMER_CounterGet (LETIMER0);
-
 }
 
 
 void timerWaitUs_interrupt(uint32_t us_wait)
 {
-  uint16_t current_tick, target_comp0_value, wrap_amount;
-  uint16_t time_in_us_per_tick;
-  uint16_t ticks_required;
+  uint16_t current_tick, underflow_amount;
+  uint16_t time_in_us_per_tick, ticks_required;
+  uint32_t comp0_value, timerPeriodInMicroSeconds;
+  uint32_t quotient;
 
   uint32_t frequency = CMU_ClockFreqGet (cmuClock_LETIMER0); // 1000 for EM3, 8192 for EM0 to 2
-
 
   // compute actual time/tick
   if (frequency == 1000)
     time_in_us_per_tick = 1000; // 1000us = 1ms
   else
-    time_in_us_per_tick = 122;  // 122us = 1/8192
+    time_in_us_per_tick = 122;  // 122us = 1/8192         /* Attribution: Instructor Dave Sluiter*/
 
-//  uint32_t ticks_required = (us_wait/1000);
-//  ticks_required = ((ticks_required*ACTUAL_CLK_FREQ)/(1000));          /* Number of ticks required*/
-
-  // This is the number of counter changes we need to see in order for the requested amount of delay to pass
-  ticks_required = us_wait / time_in_us_per_tick;
-
-  //10800/1000=10.8
-  //10.8*8192
+  comp0_value = LETIMER_CompareGet (LETIMER0, 0);
+  timerPeriodInMicroSeconds = comp0_value * time_in_us_per_tick;
 
   // range check
-  if (ticks_required > VALUE_TO_LOAD_COMP0)         /* Clamping the delay to LE timer period*/
+  if (us_wait > timerPeriodInMicroSeconds)         /* Clamping the delay to LE timer period */
     {
-      ticks_required = (VALUE_TO_LOAD_COMP0);
+      us_wait = (timerPeriodInMicroSeconds);
       LOG_ERROR("Delay requested is longer than time period; Clamping delay to LE timer time period \n\r");
     }
-  else if (ticks_required < (MIN_VALUE))            /* Clamping the delay to LE timer resolution*/
-    {
-      ticks_required = (MIN_VALUE);
-      LOG_ERROR("Delay requested is shorter than 1ms; Clamping delay to LE timer resolution \n\r");
-    }
 
-  //current=1000-4000
-  //(0x5000)-(0x4000-0x1000)=0x2000.
+  quotient  = us_wait / time_in_us_per_tick; // in number of ticks
+  current_tick = (uint16_t) LETIMER_CounterGet(LETIMER0);
 
-      current_tick = LETIMER_CounterGet(LETIMER0);
-
-      target_comp0_value = current_tick - ticks_required;
-
-      // if target_comp0_value is > COMP0 register value, it means we wrapped around
-      if (target_comp0_value > LETIMER0->COMP0) {
-          wrap_amount = 0xFFFF - target_comp0_value + 1;
-          //                   COMP0           - (amount we wrapped around by)
-          target_comp0_value = LETIMER0->COMP0 - wrap_amount;
+      // non-wrap around case
+      if (current_tick > quotient){
+          ticks_required = current_tick - quotient;
+      }
+      else{   // wrap-around case
+          underflow_amount = 0xFFFF - (current_tick - quotient + 1);    /* Attribution: Instructor Dave Sluiter*/
+          ticks_required = comp0_value - underflow_amount;
       }
 
-      // When we get here target_comp0_value contains the COMP0 value we need to wait
-      // for the counter to get to in order for the requested amount of delay to have passed.
-
-      LOG_INFO("Cnt=%d, Tr=%d, Tc0=%d", current_tick, ticks_required, target_comp0_value);
-
-//      if (current_tick >= ticks_required){
-//      delay_tick = current_tick - ticks_required;           /* LE timer is a countdown timer*/
-//      }
-//
-//      else{                    // overflow condition
-//        delay_tick = (VALUE_TO_LOAD_COMP0 - (ticks_required - current_tick));
-//      }
-
-      LETIMER_CompareSet(LETIMER0, 1, target_comp0_value);     /* Loading the delay period in COMP1 register*/
+      LETIMER_CompareSet(LETIMER0, 1, ticks_required);     /* Loading the delay period in COMP1 register*/
+      LETIMER_IntClear  (LETIMER0, LETIMER_IFC_COMP1);
 
       // DOS: Set COMP1 IEN bit, cleared in your LETIMER0_IRQHandler() if COMP1 IF bit is set.
-      //      You have this commented out in irq.c: LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
       LETIMER_IntEnable (LETIMER0, LETIMER_IEN_COMP1);
-      LETIMER0->IEN = LETIMER0->IEN | LETIMER_IEN_COMP1; // DOS fix for compiler bug
-
+      LETIMER0->IEN = LETIMER0->IEN | LETIMER_IEN_COMP1;  /* Attribution: Instructor Dave Sluiter*/
 
 }
 
 
 
 
-
+/* Attribution: Instructor Dave Sluiter*/
 // -----------------------------------------------
 // IRQ driven version - DOS: This is the instructors version
 // -----------------------------------------------
@@ -175,7 +136,7 @@ void timerWaitUs_irq (uint32_t delayInMicroSeconds) {
 
   // compute actual time/tick
   if (frequency == 1000)
-    time_in_us_per_tick = 1000; // 1000us = 1ms
+    time_in_us_per_tick = 1000; // 1000us = 1ms = 1/1000
   else
     time_in_us_per_tick = 122;  // 122us = 1/8192
 
@@ -228,46 +189,9 @@ void timerWaitUs_irq (uint32_t delayInMicroSeconds) {
   LETIMER_IntEnable (LETIMER0, LETIMER_IEN_COMP1);
   LETIMER0->IEN = LETIMER0->IEN | LETIMER_IEN_COMP1; // DOS fix for compiler bug
 
-  // ########################################################################
-  /*
-   * This code is here because of a weird compiler issue when using GCC 7.2.1
-   * The call: LETIMER_IntEnable (LETIMER0, LETIMER_IEN_COMP1); did not set the
-   * COMP1 IEN bit??? Now that we're on 10.2, testing showed that this wasn't required.
-   */
-  /*
-  LETIMER_TypeDef    *letimer;
-  uint32_t           ien;
-  letimer = LETIMER0;
-  ien = letimer->IEN; // fetch the IEN bits
-
-  // ASSERT
-  if (ien != 6) {
-      LOG_ERROR("comp1=%d ien=%d", (int) temp, (int) ien);
-      temp = LETIMER_CounterGet (LETIMER0);
-      temp = LETIMER_CounterGet (LETIMER0);
-      temp = LETIMER_CounterGet (LETIMER0);
-      // force it
-      letimer->IEN |= LETIMER_IEN_COMP1;
-      ien = letimer->IEN; // fetch the IEN bits
-      if (ien != 6) {
-          LOG_ERROR("ASSERT: ien != 6");
-          __BKPT(0);
-      }
-  }
-  */
-  // ########################################################################
-
-
   return;
 
 } // timerWaitUs_irq()
-
-
-
-
-
-
-
 
 
 void timerWaitUs_polled(uint32_t us_wait)

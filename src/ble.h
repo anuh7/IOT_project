@@ -1,8 +1,18 @@
-/*
- * ble.h
- *
- *  Created on: 03-Oct-2023
- *      Author: ROTODYNE
+/* @file      ble.h
+ * @version   1.0
+ * @brief     Application interface provided for ble.c
+ *
+ * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
+ * @date      Oct 06, 2023
+ *
+ * @institution University of Colorado Boulder (UCB)
+ * @course      ECEN 5823: IoT Embedded Firmware
+ * @instructor  David Sluiter
+ *
+ * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
+ * @due        Oct 06
+ *
+ * @resources  -
  */
 
 #ifndef SRC_BLE_H_
@@ -29,17 +39,37 @@ typedef struct {
       // values unique for server
       uint8_t advertisingSetHandle;
       uint8_t connection_handle;
+      bool connection_open;             // true when in an open connection
+      bool ok_to_send_htm_indications;  // true when client enabled indications
+      bool indication_in_flight;        // true when an indication is in-flight
 
-      bool connection_open; // true when in an open connection
-      bool ok_to_send_htm_indications; // true when client enabled indications
-      bool indication_in_flight; // true when an indication is in-flight
-      // values unique for client
 } ble_data_struct_t;
 
 
-// function prototypes
+/**
+* @brief Function to pass the temperature read from Si7021 as a GATT attribute
+*         to the client.
+*
+* @param void
+* @return void
+*/
 void send_temperature();
+
+/**
+* @brief Function that returns a pointer to the BLE private data so it can be
+*         used in other .c files as well.
+*
+* @param void
+* @return sl_bt_msg_t BLE event
+*/
 ble_data_struct_t* getBleDataPtr(void);
+
+/**
+* @brief Function to handle BLE events.
+*
+* @param sl_bt_msg_t BLE event
+* @return void
+*/
 void handle_ble_event(sl_bt_msg_t *evt);
 
 

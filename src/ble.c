@@ -1,10 +1,19 @@
-/*
- * ble.c
- *
- *  Created on: 03-Oct-2023
- *      Author: ROTODYNE
+/* @file      ble.c
+ * @version   1.0
+ * @brief     Functions for BLE events
+ *
+ * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
+ * @date      Oct 06, 2023
+ *
+ * @institution University of Colorado Boulder (UCB)
+ * @course      ECEN 5823: IoT Embedded Firmware
+ * @instructor  David Sluiter
+ *
+ * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
+ * @due        Oct 06
+ *
+ * @resources  -
  */
-
 
 #include "src/ble.h"
 #include "sl_bluetooth.h"
@@ -20,7 +29,7 @@
 #include "src/log.h"
 
 // BLE private data
-ble_data_struct_t ble_data; // this is the declaration
+ble_data_struct_t ble_data;
 sl_status_t sc = 0;
 
 
@@ -42,7 +51,6 @@ void send_temperature()
   if (bleDataPtr->connection_open == true){
 
       temperature_in_c = (uint32_t)read_temp_from_si7021();
-      LOG_INFO("temp= %d", temperature_in_c);
 
       UINT8_TO_BITSTREAM(p, flags);
 
@@ -60,6 +68,7 @@ void send_temperature()
                    LOG_ERROR("sl_bt_gatt_server_write_attribute_value() returned != 0 status=0x%04x", (unsigned int) sc);
                }
 
+      // Pass the GATT attribute only if the indications are set
       if(bleDataPtr->ok_to_send_htm_indications == true && bleDataPtr->indication_in_flight == false){
 
           sc = sl_bt_gatt_server_send_indication(bleDataPtr->connection_handle,
@@ -92,7 +101,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 // Including starting BT stack soft timers!
 // --------------------------------------------------------
     case sl_bt_evt_system_boot_id:
-          LOG_INFO("Boot Evt\n"); // DOS
 
           sc = sl_bt_system_get_identity_address(&(bleDataPtr->myAddress), &(bleDataPtr->myAddressType));
 
@@ -125,6 +133,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
               LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x", (unsigned int) sc);
           }
 
+          // Initialising the flags
           bleDataPtr->connection_open = false;
           bleDataPtr->indication_in_flight = false;
           bleDataPtr->ok_to_send_htm_indications = false;
@@ -132,7 +141,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       break;
 
     case sl_bt_evt_connection_opened_id:
-      LOG_INFO("Open Evt\n"); // DOS
 
       // handle open event
       bleDataPtr->connection_open = true;
@@ -168,14 +176,13 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       break;
 
      case sl_bt_evt_connection_closed_id:
-       LOG_INFO("Close Evt\n"); // DOS
 
        // handle close event
        bleDataPtr->connection_open = false;
 
        sc = sl_bt_advertiser_start((bleDataPtr->advertisingSetHandle),
-                                   sl_bt_advertiser_general_discoverable,
-                                   sl_bt_advertiser_connectable_scannable);
+                                   sl_bt_advertiser_general_discoverable,       // Discoverable using general discovery procedure
+                                   sl_bt_advertiser_connectable_scannable);     // Undirected connectable scannable
 
        if (sc != SL_STATUS_OK) {
            LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x", (unsigned int) sc);
@@ -185,10 +192,10 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_connection_parameters_id:
 
-       LOG_INFO("Connection parameters: Connection=%d \n\r", (int)(evt->data.evt_connection_parameters.connection));
-       LOG_INFO("Interval=%d \n\r", (int)(evt->data.evt_connection_parameters.interval*1.25));
-       LOG_INFO("Latency=%d \n\r", (int)(evt->data.evt_connection_parameters.latency));
-       LOG_INFO("Timeout=%d \n\r", (int)(evt->data.evt_connection_parameters.timeout*10));
+//       LOG_INFO("Connection parameters: Connection=%d \n\r", (int)(evt->data.evt_connection_parameters.connection));
+//       LOG_INFO("Interval=%d \n\r", (int)(evt->data.evt_connection_parameters.interval*1.25));
+//       LOG_INFO("Latency=%d \n\r", (int)(evt->data.evt_connection_parameters.latency));
+//       LOG_INFO("Timeout=%d \n\r", (int)(evt->data.evt_connection_parameters.timeout*10));
 
        break;
 
@@ -198,21 +205,16 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_gatt_server_characteristic_status_id:
 
-       //LOG_INFO("H2");
-       LOG_INFO("");
-
-       if (evt->data.evt_gatt_server_characteristic_status.connection == gattdb_temperature_measurement)
+       // Checking for the correct characteristic
+       if (evt->data.evt_gatt_server_characteristic_status.characteristic == gattdb_temperature_measurement)
          {
-           // Characteristic client configuration has been changed.
-           LOG_INFO("H");
-
            if (evt->data.evt_gatt_server_characteristic_status.status_flags == sl_bt_gatt_server_client_config)
              {
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_disable)
-                   bleDataPtr->ok_to_send_htm_indications = false;
+                   bleDataPtr->ok_to_send_htm_indications = false;            // Notifications are disabled
 
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_indication)
-                   bleDataPtr->ok_to_send_htm_indications = true;
+                   bleDataPtr->ok_to_send_htm_indications = true;             // Client has enabled notifications
              }
 
            if (evt->data.evt_gatt_server_characteristic_status.status_flags == sl_bt_gatt_server_confirmation)

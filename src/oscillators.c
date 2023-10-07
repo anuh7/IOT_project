@@ -15,7 +15,7 @@
  * @resources  -
  */
 
-#define INCLUDE_LOG_DEBUG 1
+#define INCLUDE_LOG_DEBUG 0
 #include "src/log.h"
 
 
@@ -44,7 +44,7 @@ void oscillator_init()
     }
 
   // DOS: See if we have the right frequency
-  uint32_t frequency = CMU_ClockFreqGet (cmuClock_LFA); // got 32768
+  uint32_t frequency = CMU_ClockFreqGet (cmuClock_LFA); // got 32768    /* Attribution: Instructor Dave Sluiter*/
   LOG_INFO("LFA clock freq = %d", (int) frequency);
   frequency = CMU_ClockFreqGet (cmuClock_LETIMER0); // got 8129
   LOG_INFO("LETIMER0 clock freq = %d", (int) frequency);

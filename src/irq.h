@@ -42,5 +42,12 @@ void LETIMER0_IRQHandler (void);
 */
 void I2C0_IRQHandler(void);
 
+/**
+* @brief Function to return the current timer; Uses LE timer with a resolution
+*         of 3000ms. Used by LOG_<> functions.
+*
+* @param void
+* @return void
+*/
 uint32_t letimerMilliseconds(void);
 #endif /* SRC_IRQ_H_ */

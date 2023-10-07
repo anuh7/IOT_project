@@ -3,14 +3,14 @@
  * @brief     Application interface provided for scheduler.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 29, 2023
+ * @date      Oct 06, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 4- Si7021 and Load Power Management
- * @due        Sept 29
+ * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
+ * @due        Oct 06
  *
  * @resources  -
  */
@@ -71,7 +71,7 @@ void schedulerSetEventI2CTransfer();
 * @return void
 */
 void state_machine(sl_bt_msg_t *evt);
-void dave_machine(sl_bt_msg_t *evt);
+
 
 
 #endif /* SRC_SCHEDULER_H_ */

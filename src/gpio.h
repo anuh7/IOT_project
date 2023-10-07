@@ -47,7 +47,7 @@ void sensor_disable();
 
 
 
-// DOS: test code
+/* Attribute: Instructor Dave Sluiter*/
 void gpioPD10On(void);
 void gpioPD10Off(void);
 

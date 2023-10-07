@@ -110,6 +110,5 @@ float read_temp_from_si7021()
     temperature = (((175.72*temp_value)/65536) - 46.85);
 
     return temperature;
-//    LOG_INFO("Temperature = %f C\n\r", temperature);
 }
 
