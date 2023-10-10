@@ -152,7 +152,7 @@ void state_machine(sl_bt_msg_t *evt)
       nextState = STATE0_IDLE;      //default
       if (evt->data.evt_system_external_signal.extsignals == evtUF_LETIMER0)
         {
-          sensor_enable();                          // power up the device
+          //sensor_enable();                          // power up the device
           timerWaitUs_interrupt(POWERUP_TIME);      // interrupt for powerup time
           nextState = STATE1_TIMER_WAIT;
         }
@@ -193,7 +193,7 @@ void state_machine(sl_bt_msg_t *evt)
       if (evt->data.evt_system_external_signal.extsignals == evt_I2CTransferComplete)
         {
           sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
-          sensor_disable();
+          //sensor_disable();
           NVIC_DisableIRQ(I2C0_IRQn);
           send_temperature();
           nextState = STATE0_IDLE;

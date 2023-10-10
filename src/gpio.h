@@ -47,8 +47,10 @@ void sensor_disable();
 
 
 
-/* Attribute: Instructor Dave Sluiter*/
+/* Attribution: Instructor Dave Sluiter*/
 void gpioPD10On(void);
 void gpioPD10Off(void);
+
+void gpioSetDisplayExtcomin(bool value);
 
 #endif /* SRC_GPIO_H_ */

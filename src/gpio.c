@@ -46,7 +46,8 @@
 #define LED1_pin   (5)
 #define sensor_port  (3)
 #define sensor_pin   (15)
-
+#define LCD_port   (3)
+#define LCD_pin     (13)
 
 
 // Set GPIO drive strengths and modes of operation
@@ -123,5 +124,14 @@ void gpioPD10Off()
   GPIO_PinOutClear(PD_port,PD_port10); // routes to Expansion Header pin 7
 }
 
-
-
+void gpioSetDisplayExtcomin(bool value)
+{
+    if(value)
+      {
+        GPIO_PinOutSet(LCD_port,LCD_pin);
+      }
+    else
+      {
+        GPIO_PinOutClear(LCD_port,LCD_pin);
+      }
+}

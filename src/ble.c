@@ -24,6 +24,7 @@
 #include "sl_status.h"
 
 #include "src/i2c.h"
+#include "src/lcd.h"
 
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
@@ -81,6 +82,7 @@ void send_temperature()
                    }
           else{
               bleDataPtr->indication_in_flight = true;
+              displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp=%d", temperature_in_c);
           }
 
         }
@@ -133,6 +135,20 @@ void handle_ble_event(sl_bt_msg_t *evt) {
               LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x", (unsigned int) sc);
           }
 
+          displayInit();
+          displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+          displayPrintf(DISPLAY_ROW_NAME, "Server");
+          displayPrintf(DISPLAY_ROW_BTADDR, "%02X:%02X:%02X:%02X:%02X:%02X",
+                        bleDataPtr->myAddress.addr[0],
+                        bleDataPtr->myAddress.addr[1],
+                        bleDataPtr->myAddress.addr[2],
+                        bleDataPtr->myAddress.addr[3],
+                        bleDataPtr->myAddress.addr[4],
+                        bleDataPtr->myAddress.addr[5]);
+          displayPrintf(DISPLAY_ROW_ASSIGNMENT, "A6");
+
+
+
           // Initialising the flags
           bleDataPtr->connection_open = false;
           bleDataPtr->indication_in_flight = false;
@@ -173,6 +189,9 @@ void handle_ble_event(sl_bt_msg_t *evt) {
                     LOG_ERROR("sl_bt_connection_set_parameters() returned != 0 status=0x%04x", (unsigned int) sc);
       }
 
+      displayPrintf(DISPLAY_ROW_CONNECTION, " ");
+      displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
+
       break;
 
      case sl_bt_evt_connection_closed_id:
@@ -187,6 +206,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
        if (sc != SL_STATUS_OK) {
            LOG_ERROR("sl_bt_advertiser_start() returned != 0 status=0x%04x", (unsigned int) sc);
        }
+
+       displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 
        break;
 
@@ -210,8 +231,10 @@ void handle_ble_event(sl_bt_msg_t *evt) {
          {
            if (evt->data.evt_gatt_server_characteristic_status.status_flags == sl_bt_gatt_server_client_config)
              {
-                 if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_disable)
+                 if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_disable){
                    bleDataPtr->ok_to_send_htm_indications = false;            // Notifications are disabled
+                   displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
+                 }
 
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_indication)
                    bleDataPtr->ok_to_send_htm_indications = true;             // Client has enabled notifications
@@ -229,6 +252,10 @@ void handle_ble_event(sl_bt_msg_t *evt) {
      case sl_bt_evt_gatt_server_indication_timeout_id:
 
        bleDataPtr->indication_in_flight = false;
+       break;
+
+     case sl_bt_evt_system_soft_timer_id:
+       displayUpdate();
        break;
 
   } // end - switch
