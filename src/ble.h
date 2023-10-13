@@ -3,14 +3,14 @@
  * @brief     Application interface provided for ble.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 06, 2023
+ * @date      Oct 13, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
- * @due        Oct 06
+ * @assignment Assignment 6 - LCD Integration and Client Command Table for A7
+ * @due        Oct 13
  *
  * @resources  -
  */
