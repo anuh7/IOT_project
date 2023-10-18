@@ -3,14 +3,14 @@
  * @brief     Functions to maintain scheduling of events
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 06, 2023
+ * @date      Oct 17, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
- * @due        Oct 06
+ * @assignment Assignment 7- Bluetooth BLE Client)
+ * @due        Oct 17
  *
  * @resources  -
  */
@@ -24,9 +24,10 @@
 #include "sl_bt_api.h"
 #include "src/ble_device_type.h"
 #include "sl_bluetooth.h"
+#include "src/lcd.h"
 
 
-#define INCLUDE_LOG_DEBUG 0
+#define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
 
@@ -47,9 +48,24 @@ typedef enum uint32_t {
   STATE2_WARMUP,                    // state for conversion time delay
   STATE3_MEASUREMENT,               // state for reading I2C command
   STATE4_REPORT,                    // state to print temperature values
+  STATE0,
+  STATE1,
+  STATE2,
+  STATE3,
+  STATE4,
 }my_states;
 
+
+
 uint32_t myEvents = 0;          // variable to hold all events
+sl_status_t rc = 0;
+
+// static const uint8_t thermo_char[2] = { 0x1c, 0x2a };
+static const uint8_t characteristic_uuid[] =  { 0x1c, 0x2a }; // Reverse the byte order for little-endian format
+static const uint8_t service_uuid[2] = { 0x09, 0x18 };
+//static const uint8_t thermo_service[2] = { 0x09, 0x18 };
+
+
 
 void schedulerSetEventUF()
 {
@@ -74,49 +90,6 @@ void schedulerSetEventI2CTransfer()
   sl_bt_external_signal(evt_I2CTransferComplete);     // RMW
   CORE_EXIT_CRITICAL();                     // exit critical, re-enable interrupts in NVIC
 }
-
-//
-//uint32_t getNextEvent()
-//{
-//  static uint32_t theEvent;                 // select 1 event to return to main() code
-//
-//  if (myEvents & evtUF_LETIMER0)
-//    {
-//      theEvent = evtUF_LETIMER0;
-//
-//      CORE_DECLARE_IRQ_STATE;            // enter critical section
-//      CORE_ENTER_CRITICAL();
-//
-//      myEvents &= ~(evtUF_LETIMER0);        // clearing the event in the data structure
-//
-//      CORE_EXIT_CRITICAL();
-//    }
-//  else if (myEvents & evtCOMP1_LETIMER0)        /* Attributions: Devang*/
-//    {
-//      theEvent = evtCOMP1_LETIMER0;
-//
-//      CORE_DECLARE_IRQ_STATE;            // enter critical section
-//      CORE_ENTER_CRITICAL();
-//
-//      myEvents &= ~(evtCOMP1_LETIMER0);
-//
-//      CORE_EXIT_CRITICAL();
-//    }
-//  else if (myEvents & evt_I2CTransferComplete)
-//    {
-//      theEvent = evt_I2CTransferComplete;
-//
-//      CORE_DECLARE_IRQ_STATE;            // enter critical section
-//      CORE_ENTER_CRITICAL();
-//
-//      myEvents &= ~(evt_I2CTransferComplete);
-//
-//      CORE_EXIT_CRITICAL();
-//    }
-//  // exit critical section
-//
-//  return (theEvent);
-//}
 
 
 void state_machine(sl_bt_msg_t *evt)
@@ -199,6 +172,122 @@ void state_machine(sl_bt_msg_t *evt)
           nextState = STATE0_IDLE;
         }
       break;
+
+    default:
+
+      break;
   }
+
+}
+
+void discovery_state_machine(sl_bt_msg_t *evt)
+{
+  static my_states nextState = STATE0;               /* Attribution: Instructor Dave Sluiter*/
+          my_states state;
+
+  ble_data_struct_t *bleDataPtr = getBleDataPtr();
+
+  state = nextState;
+
+  switch (state)
+  {
+    case STATE0:
+      nextState = STATE0;      //default
+      LOG_INFO("Here0");
+
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_opened_id)
+ //     if(bleDataPtr->connection_open)
+          {
+              LOG_INFO("Here1");
+
+//              sc = sl_bt_gatt_discover_primary_services_by_uuid(evt->data.evt_connection_opened.connection,
+//                                                                sizeof(thermo_service),
+//                                                                (const uint8_t*)thermo_service);
+
+          // 1-time discovery of the HTM service using its service UUID
+              rc = sl_bt_gatt_discover_primary_services_by_uuid(bleDataPtr->connection_handle,
+                                              sizeof(service_uuid),
+                                              (const uint8_t *)service_uuid);
+
+              if (rc != SL_STATUS_OK) {
+                           LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() returned != 0 status=0x%04x", (unsigned int) rc);
+                       }
+              nextState = STATE1;
+          }
+      break;
+
+    case STATE1:
+      nextState = STATE1;
+
+      LOG_INFO("Here1.5");
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+//          sl_status_t sl_bt_gatt_discover_characteristics_by_uuid(uint8_t connection,
+//                                                                  uint32_t service,
+//                                                                  size_t uuid_len,
+//                                                                  const uint8_t* uuid);
+          //1-time discovery of the Temperature Measurement characteristic
+          // using the HTM thermometer characteristic UUID
+          LOG_INFO("Here2");
+          rc = sl_bt_gatt_discover_characteristics_by_uuid(bleDataPtr->connection_handle,
+                                                           bleDataPtr->service_handle,
+                                                           sizeof(characteristic_uuid),
+                                                           (const uint8_t *)characteristic_uuid);
+
+          if (rc != SL_STATUS_OK) {
+                       LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() returned != 0 status=0x%04x", (unsigned int) rc);
+                   }
+
+          nextState = STATE2;
+        }
+      break;
+
+    case STATE2:
+      nextState = STATE2;     //sl_bt_evt_gatt_procedure_completed_id
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+          LOG_INFO("Here3");
+          rc = sl_bt_gatt_set_characteristic_notification(bleDataPtr->connection_handle,
+                                                          bleDataPtr->characteristic,
+                                                          sl_bt_gatt_indication);
+//          sl_status_t sl_bt_gatt_set_characteristic_notification(uint8_t connection,
+//                                                                 uint16_t characteristic,
+//                                                                 uint8_t flags);
+//1-time enabling of the HTM temperature indications. Disabling indications for the HTM characteristic is not required.
+          if (rc != SL_STATUS_OK) {
+                       LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x", (unsigned int) rc);
+                   }
+
+          displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
+
+          nextState = STATE3;
+        }
+      break;
+
+    case STATE3:
+      nextState = STATE3;
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+          LOG_INFO("Here4");
+          nextState = STATE4;
+        }
+     break;
+
+    case STATE4:
+      nextState = STATE4;
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id)
+        {
+          LOG_INFO("Here5 \r\n");
+          nextState = STATE0;
+        }
+     break;
+
+    default:
+
+      break;
+
+
+  }
+
 
 }

@@ -43,6 +43,12 @@ typedef struct {
       bool ok_to_send_htm_indications;  // true when client enabled indications
       bool indication_in_flight;        // true when an indication is in-flight
 
+      //client
+      uint32_t service_handle;
+      //characteristic handle ie. address
+      uint16_t characteristic;
+      uint8_t * characteristic_value;
+
 } ble_data_struct_t;
 
 

@@ -71,6 +71,7 @@ void schedulerSetEventI2CTransfer();
 * @return void
 */
 void state_machine(sl_bt_msg_t *evt);
+void discovery_state_machine(sl_bt_msg_t *evt);
 
 
 

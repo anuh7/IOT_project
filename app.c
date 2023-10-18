@@ -77,10 +77,6 @@
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
-// DOS
-//enum {
-//  evtUF_LETIMER0 = 1,
-//};
 
 // *************************************************
 // Power Manager
@@ -264,11 +260,15 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
   // For A5 uncomment the next 2 function calls
    handle_ble_event(evt); // put this code in ble.c/.h
 
-  // sequence through states driven by events
-   state_machine(evt);    // put this code in scheduler.c/.h
-//   alt_state_machine(evt);
-//   dave_machine(evt);
-
+#if DEVICE_IS_BLE_SERVER
+// SERVER
+// sequence through states driven by events
+   state_machine(evt);  // put this code in scheduler.c/.h
+#else
+//CLIENT
+// sequence through service and characteristic discovery
+   discovery_state_machine(evt); // put this code in src/scheduler.c/.h
+#endif
 
 } // sl_bt_on_event()
 
