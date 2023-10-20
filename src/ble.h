@@ -3,14 +3,14 @@
  * @brief     Application interface provided for ble.c
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 13, 2023
+ * @date      Oct 20, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 6 - LCD Integration and Client Command Table for A7
- * @due        Oct 13
+ * @assignment Assignment 7 - Bluetooth BLE Client
+ * @due        Oct 20
  *
  * @resources  -
  */
@@ -45,8 +45,7 @@ typedef struct {
 
       //client
       uint32_t service_handle;
-      //characteristic handle ie. address
-      uint16_t characteristic;
+      uint16_t characteristic;          //characteristic handle ie. address
       uint8_t * characteristic_value;
 
 } ble_data_struct_t;

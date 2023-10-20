@@ -3,14 +3,14 @@
  * @brief     Functions for BLE events
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 13, 2023
+ * @date      Oct 20, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 6 - LCD Integration and Client Command Table for A7
- * @due        Oct 13
+ * @assignment Assignment 7 - Bluetooth BLE Client
+ * @due        Oct 20
  *
  * @resources  -
  */
@@ -91,6 +91,7 @@ void send_temperature()
   }
 }
 
+#if !DEVICE_IS_BLE_SERVER
 
 static int32_t FLOAT_TO_INT32(const uint8_t *value_start_little_endian)
 {
@@ -120,6 +121,7 @@ static int32_t FLOAT_TO_INT32(const uint8_t *value_start_little_endian)
     return (int32_t) (pow( (double) 10, (double) exponent) * (double) mantissa);
 } // FLOAT_TO_INT32
 
+#endif
 
 
 void handle_ble_event(sl_bt_msg_t *evt) {
@@ -194,7 +196,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
               LOG_ERROR("sl_bt_scanner_set_timing() returned != 0 status=0x%04x", (unsigned int) sc);
           }
 
-          sc = sl_bt_connection_set_default_parameters(60, 60, 4, 82, 0, 6.4); //max ce value = 4/0.625 =6.4???
+            sc = sl_bt_connection_set_default_parameters(60, 60, 4, 83, 0, 7);
           if (sc != SL_STATUS_OK) {
               LOG_ERROR("sl_bt_scanner_set_timing() returned != 0 status=0x%04x", (unsigned int) sc);
           }
@@ -218,8 +220,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
                         bleDataPtr->myAddress.addr[5]);
           displayPrintf(DISPLAY_ROW_ASSIGNMENT, "A7");
 
-
-
           // Initialising the flags
           bleDataPtr->connection_open = false;
           bleDataPtr->indication_in_flight = false;
@@ -233,8 +233,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
       bleDataPtr->connection_open = true;
       bleDataPtr->connection_handle = evt->data.evt_connection_opened.connection;
 
-      //sc = sl_bt_gatt_discover_primary_services_by_uuid(evt->data.evt_connection_opened.connection,
-
 
 #if DEVICE_IS_BLE_SERVER
 
@@ -246,16 +244,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
                     LOG_ERROR("sl_bt_advertiser_stop() returned != 0 status=0x%04x", (unsigned int) sc);
       }
 
-//      ******************************************************************************/
-//     sl_status_t sl_bt_connection_set_parameters(uint8_t connection,
-//                                                 uint16_t min_interval,
-//                                                 uint16_t max_interval,
-//                                                 uint16_t latency,
-//                                                 uint16_t timeout,
-//                                                 uint16_t min_ce_length,
-//                                                 uint16_t max_ce_length);
-//
-//     /***************************************************************************//**
       sc = sl_bt_connection_set_parameters(bleDataPtr->connection_handle,
                                            0x3c,          //75/1.25
                                            0x3c,
@@ -287,8 +275,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
        // handle close event
        bleDataPtr->connection_open = false;
-//       bleDataPtr->indication_in_flight = false;
-//       bleDataPtr->ok_to_send_htm_indications = false;
+
 
 #if DEVICE_IS_BLE_SERVER
        sc = sl_bt_advertiser_start((bleDataPtr->advertisingSetHandle),
@@ -371,9 +358,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_scanner_scan_report_id:
 
-//bd_addr    address;           /**< Bluetooth address of the remote device */
-//uint8_t    address_type;      /**< Advertiser address type. Values:
-
        if ( (evt->data.evt_scanner_scan_report.packet_type == 0) &&
            (evt->data.evt_scanner_scan_report.address_type == 0) &&
            (evt->data.evt_scanner_scan_report.address.addr[0] == server_addr.addr[0]) &&
@@ -415,19 +399,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
        break;
 
      case sl_bt_evt_gatt_characteristic_value_id:
-
-//       PACKSTRUCT( struct sl_bt_evt_gatt_characteristic_value_s
-//       {
-//         uint8_t    connection;     /**< Connection handle */
-//         uint16_t   characteristic; /**< GATT characteristic handle. This value is
-//                                         normally received from the gatt_characteristic
-//                                         event. */
-//         uint8_t    att_opcode;     /**< Enum @ref sl_bt_gatt_att_opcode_t. Attribute
-//                                         opcode, which indicates the GATT transaction
-//                                         used. */
-//         uint16_t   offset;         /**< Value offset */
-//         uint8array value;          /**< Characteristic value */
-//       });
 
        if (evt->data.evt_gatt_characteristic_value.characteristic == bleDataPtr->characteristic)
          {

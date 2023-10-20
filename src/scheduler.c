@@ -3,14 +3,15 @@
  * @brief     Functions to maintain scheduling of events
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 17, 2023
+ * @date      Oct 20, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 7- Bluetooth BLE Client)
- * @due        Oct 17
+ * @assignment Assignment 7 - Bluetooth BLE Client
+ * @due        Oct 20
+ *
  *
  * @resources  -
  */
@@ -60,10 +61,8 @@ typedef enum uint32_t {
 uint32_t myEvents = 0;          // variable to hold all events
 sl_status_t rc = 0;
 
-// static const uint8_t thermo_char[2] = { 0x1c, 0x2a };
 static const uint8_t characteristic_uuid[] =  { 0x1c, 0x2a }; // Reverse the byte order for little-endian format
 static const uint8_t service_uuid[2] = { 0x09, 0x18 };
-//static const uint8_t thermo_service[2] = { 0x09, 0x18 };
 
 
 
@@ -193,17 +192,9 @@ void discovery_state_machine(sl_bt_msg_t *evt)
   {
     case STATE0:
       nextState = STATE0;      //default
-      LOG_INFO("Here0");
 
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_opened_id)
- //     if(bleDataPtr->connection_open)
           {
-              LOG_INFO("Here1");
-
-//              sc = sl_bt_gatt_discover_primary_services_by_uuid(evt->data.evt_connection_opened.connection,
-//                                                                sizeof(thermo_service),
-//                                                                (const uint8_t*)thermo_service);
-
           // 1-time discovery of the HTM service using its service UUID
               rc = sl_bt_gatt_discover_primary_services_by_uuid(bleDataPtr->connection_handle,
                                               sizeof(service_uuid),
@@ -219,16 +210,8 @@ void discovery_state_machine(sl_bt_msg_t *evt)
     case STATE1:
       nextState = STATE1;
 
-      LOG_INFO("Here1.5");
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
         {
-//          sl_status_t sl_bt_gatt_discover_characteristics_by_uuid(uint8_t connection,
-//                                                                  uint32_t service,
-//                                                                  size_t uuid_len,
-//                                                                  const uint8_t* uuid);
-          //1-time discovery of the Temperature Measurement characteristic
-          // using the HTM thermometer characteristic UUID
-          LOG_INFO("Here2");
           rc = sl_bt_gatt_discover_characteristics_by_uuid(bleDataPtr->connection_handle,
                                                            bleDataPtr->service_handle,
                                                            sizeof(characteristic_uuid),
@@ -243,17 +226,13 @@ void discovery_state_machine(sl_bt_msg_t *evt)
       break;
 
     case STATE2:
-      nextState = STATE2;     //sl_bt_evt_gatt_procedure_completed_id
+      nextState = STATE2;
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
         {
-          LOG_INFO("Here3");
           rc = sl_bt_gatt_set_characteristic_notification(bleDataPtr->connection_handle,
                                                           bleDataPtr->characteristic,
                                                           sl_bt_gatt_indication);
-//          sl_status_t sl_bt_gatt_set_characteristic_notification(uint8_t connection,
-//                                                                 uint16_t characteristic,
-//                                                                 uint8_t flags);
-//1-time enabling of the HTM temperature indications. Disabling indications for the HTM characteristic is not required.
+
           if (rc != SL_STATUS_OK) {
                        LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x", (unsigned int) rc);
                    }
@@ -268,7 +247,6 @@ void discovery_state_machine(sl_bt_msg_t *evt)
       nextState = STATE3;
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
         {
-          LOG_INFO("Here4");
           nextState = STATE4;
         }
      break;
@@ -277,7 +255,6 @@ void discovery_state_machine(sl_bt_msg_t *evt)
       nextState = STATE4;
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id)
         {
-          LOG_INFO("Here5 \r\n");
           nextState = STATE0;
         }
      break;
@@ -286,8 +263,5 @@ void discovery_state_machine(sl_bt_msg_t *evt)
 
       break;
 
-
   }
-
-
 }

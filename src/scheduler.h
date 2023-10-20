@@ -9,8 +9,8 @@
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 5- BLE Health Thermometer Profile (HTP)
- * @due        Oct 06
+ * @assignment Assignment 7 - Bluetooth BLE Client
+ * @due        Oct 20
  *
  * @resources  -
  */
@@ -71,6 +71,14 @@ void schedulerSetEventI2CTransfer();
 * @return void
 */
 void state_machine(sl_bt_msg_t *evt);
+
+/**
+* @brief State machine to control order of events for discovering a server device
+*
+*
+* @param uint32_t event occurred is passed to decide on state transition
+* @return void
+*/
 void discovery_state_machine(sl_bt_msg_t *evt);
 
 
