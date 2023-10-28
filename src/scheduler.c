@@ -3,14 +3,14 @@
  * @brief     Functions to maintain scheduling of events
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Oct 20, 2023
+ * @date      Oct 28, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 7 - Bluetooth BLE Client
- * @due        Oct 20
+ * @assignment Assignment 8: BLE Server with Security
+ * @due        Oct 28
  *
  *
  * @resources  -
@@ -34,12 +34,6 @@
 
 #define POWERUP_TIME      (80000)
 #define CONVERTION_TIME    (10800)
-
-enum {
-  evtUF_LETIMER0 = 0x01,           // event for underflow interrupt
-  evtCOMP1_LETIMER0 = 0x02,        // event for COMP1 interrupt
-  evt_I2CTransferComplete = 0x04    // event for I2C transaction
-};
 
 
 #define   MY_NUM_STATES (5)
@@ -90,6 +84,21 @@ void schedulerSetEventI2CTransfer()
   CORE_EXIT_CRITICAL();                     // exit critical, re-enable interrupts in NVIC
 }
 
+void schedulerSetEventButtonReleased()
+{
+  CORE_DECLARE_IRQ_STATE;
+  CORE_ENTER_CRITICAL();                    // enter critical, turn off interrupts in NVIC
+  sl_bt_external_signal(evt_button_released);     // RMW
+  CORE_EXIT_CRITICAL();
+}
+
+void schedulerSetEventButtonPressed()
+{
+  CORE_DECLARE_IRQ_STATE;
+  CORE_ENTER_CRITICAL();                    // enter critical, turn off interrupts in NVIC
+  sl_bt_external_signal(evt_button_pressed);     // RMW
+  CORE_EXIT_CRITICAL();
+}
 
 void state_machine(sl_bt_msg_t *evt)
 {

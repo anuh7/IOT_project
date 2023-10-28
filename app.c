@@ -186,6 +186,8 @@ SL_WEAK void app_init(void)
   // -----------------------------------------------
   NVIC_ClearPendingIRQ(LETIMER0_IRQn);
   NVIC_EnableIRQ(LETIMER0_IRQn);
+  NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
+  NVIC_EnableIRQ(GPIO_EVEN_IRQn);
 
 //  timerWaitUs_interrupt(80000); // gen first COMP1 event
 

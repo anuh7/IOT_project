@@ -50,6 +50,7 @@
 #define LCD_pin     (13)
 
 
+
 // Set GPIO drive strengths and modes of operation
 void gpioInit()
 {
@@ -71,7 +72,14 @@ void gpioInit()
   // to test timerWaitUs_interrupt()
   GPIO_DriveStrengthSet(PD_port, gpioDriveStrengthWeakAlternateWeak);       /* Attribute: Instructor Dave Sluiter*/
   GPIO_PinModeSet(PD_port, PD_port10, gpioModePushPull, false);
+
   gpioPD10Off();
+
+  /* Set the pin of Push Button 0 as input with pull-up resistor */
+  //(0 = down and 1 = up).      AN0012
+
+  GPIO_PinModeSet(button_port, button_pin, gpioModeInputPullFilter, true);
+  GPIO_ExtIntConfig(button_port, button_pin, button_pin, true, true, true);
 
 } // gpioInit()
 

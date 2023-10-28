@@ -1,18 +1,18 @@
 /* @file      irq.c
  * @version   1.0
- * @brief     LETIMER0 Interrupt routine file.
+ * @brief     Interrupt routine file.
  *
  * @author    Anuhya Kuraparthy, anuhya.kuraparthy@colorado.edu
- * @date      Sept 29, 2023
+ * @date      Oct 27th, 2023
  *
  * @institution University of Colorado Boulder (UCB)
  * @course      ECEN 5823: IoT Embedded Firmware
  * @instructor  David Sluiter
  *
- * @assignment Assignment 4- Si7021 and Load Power Management
- * @due        Sept 29
+ * @assignment Assignment 8
+ * @due        oct 27th
  *
- * @resources  -
+ * @resources  https://github.com/ryankurte/silabs-rail/blob/master/submodules/emdrv/gpiointerrupt/src/gpiointerrupt.c
  */
 
 #include <stdint.h>
@@ -26,6 +26,10 @@
 #include "gpio.h"
 #include "src/scheduler.h"
 #include "src/timers.h"
+#include "ble.h"
+#include "sl_bt_api.h"
+#include "src/ble_device_type.h"
+#include "sl_bluetooth.h"
 
 
 #define INCLUDE_LOG_DEBUG 1
@@ -79,4 +83,25 @@ uint32_t letimerMilliseconds(void)
     uint32_t time;
     time = (count)*3000;
     return time;
+}
+
+void GPIO_EVEN_IRQHandler(void)
+{
+  uint32_t iflags;
+
+  iflags = GPIO_IntGetEnabled();
+  GPIO_IntClear(iflags);
+  unsigned int button_value = GPIO_PinInGet(button_port, button_pin);
+
+  ble_data_struct_t *bleDataPtr = getBleDataPtr();
+  if (button_value)       //pressed = 0
+    {
+      bleDataPtr->button_status = false;
+      schedulerSetEventButtonReleased();
+    }
+  else
+    {
+      bleDataPtr->button_status = true;
+      schedulerSetEventButtonPressed();
+    }
 }

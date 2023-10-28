@@ -31,6 +31,13 @@
     *(p)++ = (uint8_t)((n) >> 16); *(p)++ = (uint8_t)((n) >> 24); }
 #define UINT32_TO_FLOAT(m, e) (((uint32_t)(m) & 0x00FFFFFFU) | (uint32_t)((int32_t)(e) << 24))
 
+
+typedef struct {
+  uint8_t        buffer[5];     // The actual data buffer for the indication.
+  uint16_t       charHandle;    // Char handle from gatt_db.h
+  size_t        bufferLength;    // Length of buffer in bytes to send
+} queue_struct_t;
+
 typedef struct {
       // values that are common to servers and clients
       bd_addr myAddress;
@@ -42,6 +49,15 @@ typedef struct {
       bool connection_open;             // true when in an open connection
       bool ok_to_send_htm_indications;  // true when client enabled indications
       bool indication_in_flight;        // true when an indication is in-flight
+      uint32_t passkey;
+
+
+      //A8
+      bool button_indication;
+      bool htm_indication;
+      bool button_status;
+      bool bonded;
+      uint8_t queued_indications;
 
       //client
       uint32_t service_handle;

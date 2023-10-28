@@ -33,6 +33,9 @@
 // PD10 traces to Expansion header 7
 #define PD_port     gpioPortD
 #define PD_port10   10
+#define button_port   gpioPortF
+#define button_pin   6
+
 
 
 

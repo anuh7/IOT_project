@@ -23,6 +23,13 @@
 
 #include "sl_bluetooth.h"
 
+enum {
+  evtUF_LETIMER0 = 0x01,           // event for underflow interrupt
+  evtCOMP1_LETIMER0 = 0x02,        // event for COMP1 interrupt
+  evt_I2CTransferComplete = 0x04,    // event for I2C transaction
+  evt_button_released = 0x08,
+  evt_button_pressed = 0x16
+};
 
 
 
@@ -62,6 +69,9 @@ void schedulerSetEventCOMP1();
 * @return void
 */
 void schedulerSetEventI2CTransfer();
+
+void schedulerSetEventButtonReleased();
+void schedulerSetEventButtonPressed();
 
 /**
 * @brief State machine to control order of events
