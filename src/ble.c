@@ -32,7 +32,6 @@
 #define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
-
 #define QUEUE_DEPTH      (16)
 
 // BLE private data
@@ -50,6 +49,22 @@ bool isFullflag = false;                // Flag to handle the full condition
 
 queue_struct_t dequeued_element;
 
+//typedef enum uint32_t {
+//  PB0_pressed,
+//  PB1_pressed,
+//  PB1_released,
+//  PB0_released
+//}toggle_states;
+
+#if !DEVICE_IS_BLE_SERVER
+
+static const uint8_t characteristic_uuid[] =  { 0x1c, 0x2a }; // Reverse the byte order for little-endian format
+static const uint8_t service_uuid[2] = { 0x09, 0x18 };
+
+static const uint8_t button_characteristic_uuid[] =  { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00 }; // Reverse the byte order for little-endian format
+static const uint8_t button_service_uuid[] =  { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00 };
+
+#endif
 
 
 // function that returns a pointer to the BLE private data
@@ -207,6 +222,9 @@ void send_button_indication(uint8_t button_value)
   button_value_array[0] = 0;
   button_value_array[1] = button_value;
 
+//    button_value_array[0] = button_value;
+//    button_value_array[1] = 0;    A9 implementation
+
   if (bleDataPtr->connection_open == true)
     {
 
@@ -230,6 +248,7 @@ void send_button_indication(uint8_t button_value)
                                                      gattdb_button_state,
                                                      2,
                                                      &button_value_array[0]);
+              //LOG_INFO("sending button indication");
               if (sc != SL_STATUS_OK)
                       {
                            LOG_ERROR("sl_bt_gatt_server_write_attribute_value() returned != 0 status=0x%04x", (unsigned int) sc);
@@ -335,16 +354,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
               LOG_ERROR("sl_bt_advertiser_set_timing() returned != 0 status=0x%04x", (unsigned int) sc);
           }
 
-          sc = sl_bt_sm_configure(0x0F, sl_bt_sm_io_capability_displayyesno);
-          if (sc != SL_STATUS_OK) {
-              LOG_ERROR("sl_bt_sm_configure() returned != 0 status=0x%04x", (unsigned int) sc);
-          }
-
-          sc = sl_bt_sm_delete_bondings();
-          if (sc != SL_STATUS_OK) {
-              LOG_ERROR("sl_bt_sm_delete_bondings() returned != 0 status=0x%04x", (unsigned int) sc);
-          }
-
           sc = sl_bt_advertiser_start((bleDataPtr->advertisingSetHandle),
                                       sl_bt_advertiser_general_discoverable,
                                       sl_bt_advertiser_connectable_scannable);
@@ -386,6 +395,16 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
 #endif
 
+          sc = sl_bt_sm_configure(0x0F, sl_bt_sm_io_capability_displayyesno);
+          if (sc != SL_STATUS_OK) {
+              LOG_ERROR("sl_bt_sm_configure() returned != 0 status=0x%04x", (unsigned int) sc);
+          }
+
+          sc = sl_bt_sm_delete_bondings();
+          if (sc != SL_STATUS_OK) {
+              LOG_ERROR("sl_bt_sm_delete_bondings() returned != 0 status=0x%04x", (unsigned int) sc);
+          }
+
           displayPrintf(DISPLAY_ROW_BTADDR, "%02X:%02X:%02X:%02X:%02X:%02X",
                         bleDataPtr->myAddress.addr[0],
                         bleDataPtr->myAddress.addr[1],
@@ -393,7 +412,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
                         bleDataPtr->myAddress.addr[3],
                         bleDataPtr->myAddress.addr[4],
                         bleDataPtr->myAddress.addr[5]);
-          displayPrintf(DISPLAY_ROW_ASSIGNMENT, "A8");
+          displayPrintf(DISPLAY_ROW_ASSIGNMENT, "A9");
 
           // Initialising the flags
           bleDataPtr->connection_open = false;
@@ -415,7 +434,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 #if DEVICE_IS_BLE_SERVER
 
           //SERVER
-
       sc = sl_bt_advertiser_stop((bleDataPtr->advertisingSetHandle));
 
       if (sc != SL_STATUS_OK) {
@@ -465,15 +483,12 @@ void handle_ble_event(sl_bt_msg_t *evt) {
        gpioLed1SetOff();
        gpioLed0SetOff();
 
-
-#if DEVICE_IS_BLE_SERVER
-
-       bleDataPtr->bonded = false;
-
        sc = sl_bt_sm_delete_bondings();
        if (sc != SL_STATUS_OK) {
            LOG_ERROR("sl_bt_sm_delete_bondings() returned != 0 status=0x%04x", (unsigned int) sc);
        }
+
+#if DEVICE_IS_BLE_SERVER
 
        sc = sl_bt_advertiser_start((bleDataPtr->advertisingSetHandle),
                                    sl_bt_advertiser_general_discoverable,       // Discoverable using general discovery procedure
@@ -491,7 +506,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
        if (sc != SL_STATUS_OK) {
            LOG_ERROR("sl_bt_scanner_set_timing() returned != 0 status=0x%04x", (unsigned int) sc);
        }
-       displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
+       displayPrintf(DISPLAY_ROW_CONNECTION, "Scanning");
 
 #endif
 
@@ -508,40 +523,64 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_system_external_signal_id:
 
+//
+//       typedef enum uint32_t {
+//         PB0_pressed,
+//         PB1_pressed,
+//         PB1_released,
+//         PB0_released
+//       }toggle_states;
+
        if(evt->data.evt_system_external_signal.extsignals == evt_button_pressed)
          {
+
+#if DEVICE_IS_BLE_SERVER
+
            displayPrintf(DISPLAY_ROW_9, "Button pressed");
-           if(bleDataPtr->bonded == false)
+           if(bleDataPtr->bonded)
              {
-             //accept connection if not bonded
-             sl_bt_sm_passkey_confirm(bleDataPtr->connection_handle, 1);
-
-             if (sc != SL_STATUS_OK)
-             {
-                 LOG_ERROR("sl_bt_sm_passkey_confirm() returned != 0 status=0x%04x", (unsigned int) sc);
-
-                 //but if send indication fails the cb still dequeues the element. I should dequeue here?
+                 send_button_indication(0x01);
+                 LOG_INFO("server- button pressed (0x01");
              }
+#else
+     //client
+           if(bleDataPtr->pb1_button_status){
+               sc = sl_bt_gatt_read_characteristic_value(bleDataPtr->connection_handle,
+                                                         bleDataPtr->button_characteristic);
+               if (sc != SL_STATUS_OK) {
+                   LOG_ERROR("sl_bt_gatt_read_characteristic_value() returned != 0 status=0x%04x", (unsigned int) sc);
+               }
            }
+#endif
 
-           else
+           if(bleDataPtr->button_status && bleDataPtr->bonded == false)
              {
-               send_button_indication(0x01);
+               sc = sl_bt_sm_passkey_confirm(bleDataPtr->connection_handle, 1);
+
+               if(sc != SL_STATUS_OK) {
+                   LOG_ERROR("sl_bt_sm_passkey_confirm() returned != 0 status=0x%04x\n\r", (unsigned int)sc);
+               }
              }
          }
+
+#if DEVICE_IS_BLE_SERVER
        else if(evt->data.evt_system_external_signal.extsignals == evt_button_released)
     {
            displayPrintf(DISPLAY_ROW_9, "Button released");
 
-           if(bleDataPtr->bonded)
+           if(bleDataPtr->bonded){
              send_button_indication(0x00);
+             LOG_INFO("server- button released (0x00");
+           }
     }
-
+#endif
 
        break;
 
      case sl_bt_evt_system_soft_timer_id:
        displayUpdate();
+
+#if DEVICE_IS_BLE_SERVER
 
        bool success;
 
@@ -581,6 +620,8 @@ void handle_ble_event(sl_bt_msg_t *evt) {
              }
 
          }
+#endif
+
        break;
 
      case sl_bt_evt_sm_confirm_bonding_id:
@@ -613,7 +654,6 @@ void handle_ble_event(sl_bt_msg_t *evt) {
      case sl_bt_evt_sm_bonding_failed_id:
 
        bleDataPtr->bonded = false;
-       LOG_ERROR("Bonding failed 0x%04x\n\r", evt->data.evt_sm_bonding_failed.reason);
 
        //close connection
        sc = sl_bt_connection_close(bleDataPtr->connection_handle);
@@ -640,6 +680,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_indication){
                    bleDataPtr->ok_to_send_htm_indications = true;             // Client has enabled notifications
+                   LOG_INFO("enabled htm indications");
                    gpioLed0SetOn();
                  }
              }
@@ -655,6 +696,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
        // Checking for the correct characteristic
        if (evt->data.evt_gatt_server_characteristic_status.characteristic == gattdb_button_state)
          {
+           //LOG_INFO("in button state characterisitc");
            if (evt->data.evt_gatt_server_characteristic_status.status_flags == sl_bt_gatt_server_client_config)
              {
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_disable){
@@ -663,6 +705,7 @@ void handle_ble_event(sl_bt_msg_t *evt) {
                  }
 
                  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == sl_bt_gatt_server_indication){
+                   //LOG_INFO("enabled button indications");
                    bleDataPtr->button_indication = true;             // Client has enabled notifications
                    gpioLed1SetOn();
                  }
@@ -714,32 +757,91 @@ void handle_ble_event(sl_bt_msg_t *evt) {
 
      case sl_bt_evt_gatt_procedure_completed_id:
 
+       if(evt->data.evt_gatt_procedure_completed.result == 0x110F) {
+
+           sc = sl_bt_sm_increase_security(bleDataPtr->connection_handle);
+           if (sc != SL_STATUS_OK) {
+               LOG_ERROR("sl_bt_sm_increase_security() returned != 0 status=0x%04x", (unsigned int) sc);
+           }
+
+       }
        break;
 
      case sl_bt_evt_gatt_service_id:
 
-       bleDataPtr->service_handle = evt->data.evt_gatt_service.service;
+    //   bleDataPtr->service_handle = evt->data.evt_gatt_service.service;
+
+       if (memcmp(evt->data.evt_gatt_service.uuid.data, service_uuid, sizeof(service_uuid)) == 0)
+         {
+           bleDataPtr->service_handle = evt->data.evt_gatt_service.service;
+         }
+       else if (memcmp(evt->data.evt_gatt_service.uuid.data, button_service_uuid, sizeof(button_service_uuid)) == 0)
+         {
+           bleDataPtr->button_service_handle = evt->data.evt_gatt_service.service;
+         }
+
        break;
+
 
      case sl_bt_evt_gatt_characteristic_id:
 
-       bleDataPtr->characteristic = evt->data.evt_gatt_characteristic.characteristic;
+//       bleDataPtr->characteristic = evt->data.evt_gatt_characteristic.characteristic;
+
+       if (memcmp(evt->data.evt_gatt_characteristic.uuid.data, characteristic_uuid, sizeof(characteristic_uuid)) == 0)
+         {
+           bleDataPtr->characteristic = evt->data.evt_gatt_characteristic.characteristic;
+         }
+       else if (memcmp(evt->data.evt_gatt_characteristic.uuid.data, button_characteristic_uuid, sizeof(button_characteristic_uuid)) == 0)
+         {
+           bleDataPtr->button_characteristic = evt->data.evt_gatt_characteristic.characteristic;
+         }
        break;
+
 
      case sl_bt_evt_gatt_characteristic_value_id:
 
-       if (evt->data.evt_gatt_characteristic_value.characteristic == bleDataPtr->characteristic)
+       if(evt->data.evt_gatt_characteristic_value.att_opcode == sl_bt_gatt_handle_value_indication)
          {
            sc = sl_bt_gatt_send_characteristic_confirmation(bleDataPtr->connection_handle);
-           if (sc != SL_STATUS_OK) {
+           if (sc != SL_STATUS_OK)
+             {
                LOG_ERROR("sl_bt_gatt_send_characteristic_confirmation() returned != 0 status=0x%04x", (unsigned int) sc);
-         }
+             }
 
+         }
+       if (evt->data.evt_gatt_characteristic_value.characteristic == bleDataPtr->characteristic)
+         {
            //Receiving the temperature indications from the Server and displaying it on the Client’s LCD.
         bleDataPtr->characteristic_value = &(evt->data.evt_gatt_characteristic_value.value.data[0]);
         temperature_from_server = FLOAT_TO_INT32(bleDataPtr->characteristic_value);
         displayPrintf(DISPLAY_ROW_TEMPVALUE, "Temp = %d",temperature_from_server);
          }
+
+       //if(bleDataPtr->bonded && bleDataPtr->button_indication && (evt->data.evt_gatt_characteristic_value.characteristic == bleDataPtr->button_characteristic)){
+       if (evt->data.evt_gatt_characteristic_value.characteristic == bleDataPtr->button_characteristic)
+         {
+           LOG_INFO("Received button characteristic \n");
+
+           if(evt->data.evt_gatt_characteristic_value.value.data[1] == 1) {
+               LOG_INFO("Client- Button pressed on server \n");
+               displayPrintf(DISPLAY_ROW_9, "Button Pressed");
+           }
+           else if(evt->data.evt_gatt_characteristic_value.value.data[1] == 0){
+               LOG_INFO("Client- Button released on server \n");
+               displayPrintf(DISPLAY_ROW_9, "Button Released");
+           }
+       }
+
+       // for PB1 press
+       if(evt->data.evt_gatt_characteristic_value.att_opcode == sl_bt_gatt_read_response) {
+           LOG_INFO("PB1 press-read button value");
+           if(evt->data.evt_gatt_characteristic_value.value.data[1] == 1) {
+               displayPrintf(DISPLAY_ROW_9, "Button Pressed");
+           }
+           else if(evt->data.evt_gatt_characteristic_value.value.data[1] == 0){
+               displayPrintf(DISPLAY_ROW_9, "Button Released");
+           }
+       }
 
 
        break;

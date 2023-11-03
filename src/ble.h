@@ -56,6 +56,7 @@ typedef struct {
       bool button_indication;
       bool htm_indication;
       bool button_status;
+      bool pb1_button_status;
       bool bonded;
       uint8_t queued_indications;
 
@@ -63,6 +64,10 @@ typedef struct {
       uint32_t service_handle;
       uint16_t characteristic;          //characteristic handle ie. address
       uint8_t * characteristic_value;
+
+      uint32_t button_service_handle;
+      uint16_t button_characteristic;          //characteristic handle ie. address
+      uint8_t * button_characteristic_value;
 
 } ble_data_struct_t;
 

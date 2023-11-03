@@ -48,6 +48,9 @@ typedef enum uint32_t {
   STATE2,
   STATE3,
   STATE4,
+  STATE5,
+  STATE6,
+  STATE7,
 }my_states;
 
 
@@ -57,6 +60,11 @@ sl_status_t rc = 0;
 
 static const uint8_t characteristic_uuid[] =  { 0x1c, 0x2a }; // Reverse the byte order for little-endian format
 static const uint8_t service_uuid[2] = { 0x09, 0x18 };
+
+static const uint8_t button_characteristic_uuid[] =  { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00 }; // Reverse the byte order for little-endian format
+static const uint8_t button_service_uuid[] =  { 0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00 };
+
+
 
 
 
@@ -195,6 +203,11 @@ void discovery_state_machine(sl_bt_msg_t *evt)
 
   ble_data_struct_t *bleDataPtr = getBleDataPtr();
 
+  //default state
+  if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id) {
+      nextState = STATE0;
+  }
+
   state = nextState;
 
   switch (state)
@@ -218,6 +231,8 @@ void discovery_state_machine(sl_bt_msg_t *evt)
 
     case STATE1:
       nextState = STATE1;
+
+
 
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
         {
@@ -256,12 +271,60 @@ void discovery_state_machine(sl_bt_msg_t *evt)
       nextState = STATE3;
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
         {
+          rc = sl_bt_gatt_discover_primary_services_by_uuid(bleDataPtr->connection_handle,
+                                                     sizeof(button_service_uuid),
+                                                     (const uint8_t *)button_service_uuid);
+
+          if (rc != SL_STATUS_OK) {
+                                  LOG_ERROR("sl_bt_gatt_discover_primary_services_by_uuid() returned != 0 status=0x%04x", (unsigned int) rc);
+          }
+
           nextState = STATE4;
         }
      break;
 
     case STATE4:
       nextState = STATE4;
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+          rc = sl_bt_gatt_discover_characteristics_by_uuid(bleDataPtr->connection_handle,
+                                                           bleDataPtr->button_service_handle,
+                                                           sizeof(button_characteristic_uuid),
+                                                           (const uint8_t *)button_characteristic_uuid);
+
+          if (rc != SL_STATUS_OK) {
+                       LOG_ERROR("sl_bt_gatt_discover_characteristics_by_uuid() returned != 0 status=0x%04x", (unsigned int) rc);
+                   }
+          nextState = STATE5;
+        }
+     break;
+
+
+    case STATE5:
+      nextState = STATE5;
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+          rc = sl_bt_gatt_set_characteristic_notification(bleDataPtr->connection_handle,
+                                                          bleDataPtr->button_characteristic,
+                                                          sl_bt_gatt_indication);
+
+          if (rc != SL_STATUS_OK) {
+                       LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x", (unsigned int) rc);
+                   }
+          nextState = STATE6;
+        }
+     break;
+
+    case STATE6:
+      nextState = STATE6;
+      if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_gatt_procedure_completed_id)
+        {
+          nextState = STATE7;
+        }
+     break;
+
+    case STATE7:
+      nextState = STATE7;
       if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id)
         {
           nextState = STATE0;
@@ -274,3 +337,5 @@ void discovery_state_machine(sl_bt_msg_t *evt)
 
   }
 }
+
+//if(SL_BT_MSG_ID(evt->header) == sl_bt_evt_connection_closed_id)

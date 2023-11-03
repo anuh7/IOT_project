@@ -35,7 +35,8 @@
 #define PD_port10   10
 #define button_port   gpioPortF
 #define button_pin   6
-
+#define button_port_pb1   gpioPortF
+#define button_pin_pb1   7
 
 
 

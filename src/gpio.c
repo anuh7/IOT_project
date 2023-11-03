@@ -81,6 +81,10 @@ void gpioInit()
   GPIO_PinModeSet(button_port, button_pin, gpioModeInputPullFilter, true);
   GPIO_ExtIntConfig(button_port, button_pin, button_pin, true, true, true);
 
+
+  GPIO_PinModeSet(button_port_pb1, button_pin_pb1, gpioModeInputPullFilter, true);
+  GPIO_ExtIntConfig(button_port_pb1, button_pin_pb1, button_pin_pb1, true, true, true);
+
 } // gpioInit()
 
 

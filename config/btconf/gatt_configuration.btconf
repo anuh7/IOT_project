@@ -149,6 +149,15 @@ When used with the Measurement Interval characteristic, the Valid Range descript
         <read authenticated="false" bonded="true" encrypted="false"/>
         <indicate authenticated="false" bonded="true" encrypted="false"/>
       </properties>
+
+      <!--Characteristic Descriptor-->
+      <descriptor const="false" discoverable="true" id="client_characteristic_descriptor" name="Characteristic Descriptor" sourceId="" uuid="2902">
+        <properties>
+          <read authenticated="false" bonded="false" encrypted="false"/>
+          <write authenticated="false" bonded="false" encrypted="false"/>
+        </properties>
+        <value length="2" type="hex" variable_length="false">00</value>
+      </descriptor>
     </characteristic>
   </service>
 </gatt>
