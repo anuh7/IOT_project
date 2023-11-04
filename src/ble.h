@@ -59,6 +59,7 @@ typedef struct {
       bool pb1_button_status;
       bool bonded;
       uint8_t queued_indications;
+      bool button_indication_client;
 
       //client
       uint32_t service_handle;

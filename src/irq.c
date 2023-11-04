@@ -32,7 +32,7 @@
 #include "sl_bluetooth.h"
 
 
-#define INCLUDE_LOG_DEBUG 0
+#define INCLUDE_LOG_DEBUG 1
 #include "src/log.h"
 
 
@@ -98,13 +98,11 @@ void GPIO_EVEN_IRQHandler(void)
     {
       bleDataPtr->button_status = false;
       schedulerSetEventButtonReleased();
-      LOG_INFO("PB0 released");
     }
   else
     {
       bleDataPtr->button_status = true;
       schedulerSetEventButtonPressed();
-      LOG_INFO("PB0 pressed");
     }
 }
 
@@ -120,23 +118,17 @@ void GPIO_ODD_IRQHandler(void) {
   iflags = GPIO_IntGetEnabled();
   GPIO_IntClear(iflags);
 
-  //get the push button status
-//#define button_port_pb1   gpioPortF
-//#define button_pin_pb1   7
-
   unsigned int button_value = GPIO_PinInGet(button_port_pb1, button_pin_pb1);
 
   if (button_value)       //pressed = 0
     {
       bleDataPtr->pb1_button_status = false;
       schedulerSetEventButtonReleased();
-      LOG_INFO("PB1 released");
     }
   else
     {
       bleDataPtr->pb1_button_status = true;
       schedulerSetEventButtonPressed();
-      LOG_INFO("PB1 pressed");
     }
 }
 

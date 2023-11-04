@@ -308,6 +308,8 @@ void discovery_state_machine(sl_bt_msg_t *evt)
                                                           bleDataPtr->button_characteristic,
                                                           sl_bt_gatt_indication);
 
+          bleDataPtr->button_indication_client = true;
+
           if (rc != SL_STATUS_OK) {
                        LOG_ERROR("sl_bt_gatt_set_characteristic_notification() returned != 0 status=0x%04x", (unsigned int) rc);
                    }
